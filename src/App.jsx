@@ -11,7 +11,7 @@ import 'swiper/css/effect-cards';
 
 const App = () => {
   const [profiles, setProfiles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); useEffect(() => { const timer = setTimeout(() => setLoading(false), 5000); return () => clearTimeout(timer); }, []);
   const [user, setUser] = useState(null);
 
   useEffect(() => { if (!db || !auth) return;
