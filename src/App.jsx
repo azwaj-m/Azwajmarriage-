@@ -1,175 +1,122 @@
-import React, { useState, useRef } from 'react';
-import { Settings, Home, Heart, User, CheckCircle, MessageCircle } from 'lucide-react';
-import ProfileSettings from './components/ProfileSettings';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { EffectCards } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/effect-cards';
+import React, { useState, useEffect, useRef } from 'react';
+import { db, auth } from './utils/firebase';
+import { ref, push, onValue, serverTimestamp, set } from 'firebase/database';
+import { MessageCircle, ShieldAlert, Send, X } from 'lucide-react';
 
 const App = () => {
-  const [view, setView] = useState('home'); // 'home', 'profile', 'settings'
-  const [isPremium, setIsPremium] = useState(false);
-  const [activeProfile, setActiveProfile] = useState(null);
-  const swiperRef = useRef(null);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [activeChat, setActiveChat] = useState(null); // Selected profile for chat
 
-  const users = [
-    { id: 0, nickName: "سارہ", age: 27, height: "5'4", religion: "اسلام", job: "ٹیچر", district: "کراچی", status: "کنواری", phone: "0300-1112223", realName: "سارہ احمد", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400" },
-    { id: 1, nickName: "عائشہ", age: 28, height: "5'5", religion: "اسلام", job: "ڈاکٹر", district: "لاہور", status: "طلاق یافتہ", phone: "0312-4445556", realName: "عائشہ خان", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400" },
-    { id: 2, nickName: "زینب", age: 24, height: "5'2", religion: "اسلام", job: "بینکر", district: "اسلام آباد", status: "کنواری", phone: "0333-7778889", realName: "زینب علی", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400" }
-  ];
+  // نامناسب الفاظ کی لسٹ (Admin Monitoring)
+  const forbiddenWords = ['بدتمیز', 'گالی', 'فراڈ', 'نمبر دو'];
 
-  const handleThumbnailClick = (index) => {
-    if (swiperRef.current && swiperRef.current.swiper) {
-      swiperRef.current.swiper.slideTo(index);
+  useEffect(() => {
+    if (activeChat && auth.currentUser) {
+      const chatId = [auth.currentUser.uid, activeChat.id].sort().join('_');
+      const chatRef = ref(db, 'chats/' + chatId + '/messages');
+      
+      // میسجز کو ریئل ٹائم سنک کرنا
+      const unsubscribe = onValue(chatRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setMessages(Object.values(data));
+        }
+      });
+
+      // چیک کریں کہ کیا ایڈمن نے بلاک تو نہیں کیا
+      const blockRef = ref(db, 'blocked_users/' + auth.currentUser.uid);
+      onValue(blockRef, (snap) => setIsBlocked(snap.exists()));
+
+      return () => unsubscribe();
     }
-  };
+  }, [activeChat]);
 
-  const handleDoubleClick = (user) => {
-    if (!isPremium) {
-      alert("مزید معلومات اور چیٹ کے لیے پریمیم ممبر بننا لازمی ہے!");
-    } else {
-      setActiveProfile(user);
+  const sendMessage = async () => {
+    if (input.trim() === '' || isBlocked) return;
+
+    // خودکار نگرانی (Auto-Monitoring)
+    const hasViolation = forbiddenWords.some(word => input.includes(word));
+    const chatId = [auth.currentUser.uid, activeChat.id].sort().join('_');
+
+    const newMessage = {
+      text: input,
+      sender: auth.currentUser.uid,
+      senderName: auth.currentUser.displayName || "User",
+      timestamp: serverTimestamp(),
+      flagged: hasViolation // اگر غلط لفظ ہو تو فلیگ کر دیں
+    };
+
+    if (hasViolation) {
+      alert("تنبیہ: آپ کا پیغام نامناسب الفاظ کی وجہ سے ایڈمن کو رپورٹ کر دیا گیا ہے!");
+      // ایڈمن الرٹ سسٹم میں ڈیٹا بھیجنا
+      await set(ref(db, 'alerts/' + Date.now()), {
+        user: auth.currentUser.uid,
+        content: input,
+        type: 'inappropriate_language'
+      });
     }
+
+    await push(ref(db, 'chats/' + chatId + '/messages'), newMessage);
+    setInput('');
   };
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-[#FDF5F5] pb-32 relative font-sans text-right" dir="rtl">
-      
-      {/* Header */}
-      <div className="bg-[#4A0E0E] p-6 pb-20 rounded-b-[50px] flex justify-between items-center shadow-xl">
-        <div className="text-[#D4AF37] font-bold italic text-xl">AZWAJ</div>
-        <Settings 
-          className="text-[#D4AF37] cursor-pointer hover:scale-110 transition-transform" 
-          onClick={() => setView('settings')} 
-        />
-      </div>
-
-      {view === 'home' && (
-        <div className="animate-in fade-in duration-500">
-          {/* Swiper Cards */}
-          <div className="-mt-12 px-4">
-            <Swiper 
-              ref={swiperRef}
-              effect={'cards'} 
-              grabCursor={true} 
-              modules={[EffectCards]} 
-              className="w-[300px] h-[420px]"
-            >
-              {users.map(u => (
-                <SwiperSlide key={u.id} onDoubleClick={() => handleDoubleClick(u)} className="rounded-[30px] bg-white shadow-2xl border-4 border-white overflow-hidden relative">
-                  <img src={u.img} className="w-full h-full object-cover" alt={u.nickName} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent p-6 flex flex-col justify-end text-white">
-                    <div className="flex items-center gap-2 mb-1">
-                       <h3 className="text-2xl font-black">{u.nickName}, {u.age}</h3>
-                       <CheckCircle size={16} className="text-blue-400" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs opacity-90 font-medium">
-                      <span>ہائٹ: {u.height}</span>
-                      <span>مذہب: {u.religion}</span>
-                      <span>کاروبار: {u.job}</span>
-                      <span>ضلع: {u.district}</span>
-                    </div>
-                    <p className="mt-3 text-[10px] text-[#D4AF37] font-bold">رابطہ کے لیے ڈبل کلک کریں ✨</p>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
-
-          {/* Active Thumbnails List */}
-          <div className="mt-8 px-6">
-            <h4 className="text-[#4A0E0E] font-bold mb-4 border-r-4 border-[#D4AF37] pr-2 text-sm italic">آن لائن ممبرز</h4>
-            <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-              {users.map((u, index) => (
-                <div 
-                  key={u.id} 
-                  onClick={() => handleThumbnailClick(index)}
-                  className="flex-shrink-0 text-center cursor-pointer transform active:scale-90 transition-all"
-                >
-                  <div className="w-16 h-16 rounded-full border-2 border-[#D4AF37] p-0.5 overflow-hidden">
-                    <img src={u.img} className="w-full h-full rounded-full object-cover" />
-                  </div>
-                  <p className="text-[10px] mt-1 font-bold text-gray-700">{u.nickName}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {view === 'profile' && (
-        <div className="p-8 text-center animate-in slide-in-from-left duration-300">
-           <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-4 border-4 border-[#4A0E0E]"></div>
-           <h2 className="text-xl font-bold">آپ کی پروفائل</h2>
-           <p className="text-gray-500">پروفائل ایڈٹ کرنے کا فیچر جلد آ رہا ہے</p>
-        </div>
-      )}
-
-      {/* Full Profile & Chat Room (Locked behind Premium) */}
-      {activeProfile && (
-        <div className="fixed inset-0 z-[600] bg-white p-8 overflow-y-auto animate-in slide-in-from-bottom duration-300">
-          <div className="flex justify-between items-center mb-6">
-            <button onClick={() => setActiveProfile(null)} className="text-3xl text-gray-400">×</button>
-            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Premium Unlocked</span>
-          </div>
-          
-          <img src={activeProfile.img} className="w-32 h-32 rounded-3xl object-cover mx-auto mb-4 shadow-lg" />
-          <h2 className="text-2xl font-bold text-[#4A0E0E] text-center mb-6">{activeProfile.realName}</h2>
-          
-          <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-xl flex justify-between">
-               <span className="text-gray-500">فون نمبر:</span>
-               <span className="font-bold font-mono">{activeProfile.phone}</span>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-xl flex justify-between">
-               <span className="text-gray-500">ازواجی حیثیت:</span>
-               <span className="font-bold">{activeProfile.status}</span>
-            </div>
-            
-            <div className="mt-8 border-t pt-6">
-               <h4 className="font-bold text-[#4A0E0E] mb-4 flex items-center gap-2">
-                 <MessageCircle size={20} /> پرائیویٹ چیٹ روم
-               </h4>
-               <div className="bg-gray-100 h-40 rounded-2xl flex items-center justify-center text-gray-400 italic text-sm p-4 text-center">
-                 {activeProfile.nickName} کے ساتھ گفتگو شروع کریں...
-               </div>
-               <div className="mt-2 flex gap-2">
-                 <input type="text" placeholder="پیغام لکھیں..." className="flex-1 p-3 border rounded-xl outline-none" />
-                 <button className="bg-[#4A0E0E] text-white p-3 rounded-xl">بھیجیں</button>
+    <div className="max-w-md mx-auto min-h-screen bg-gray-50 font-sans" dir="rtl">
+      {/* اگر چیٹ ایکٹیو ہو تو یہ ونڈو کھلے گی */}
+      {activeChat && (
+        <div className="fixed inset-0 z-[700] bg-white flex flex-col">
+          {/* Chat Header */}
+          <div className="bg-[#4A0E0E] p-4 text-[#D4AF37] flex justify-between items-center shadow-lg">
+            <div className="flex items-center gap-3">
+              <img src={activeChat.img} className="w-10 h-10 rounded-full border border-[#D4AF37]" />
+              <div>
+                <p className="font-bold">{activeChat.nickName}</p>
+                <p className="text-[10px] text-green-400">آن لائن</p>
               </div>
             </div>
+            <X onClick={() => setActiveChat(null)} className="cursor-pointer" />
+          </div>
+
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FDF5F5]">
+            {messages.map((m, i) => (
+              <div key={i} className={`flex ${m.sender === auth.currentUser?.uid ? 'justify-start' : 'justify-end'}`}>
+                <div className={`max-w-[80%] p-3 rounded-2xl shadow-sm ${
+                  m.flagged ? 'bg-red-100 border border-red-300 text-red-800' : 
+                  m.sender === auth.currentUser?.uid ? 'bg-[#4A0E0E] text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none'
+                }`}>
+                  <p className="text-sm">{m.text}</p>
+                  {m.flagged && <span className="text-[9px] flex items-center gap-1 mt-1"><ShieldAlert size={10}/> ایڈمن کی زیر نگرانی</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Input Area */}
+          <div className="p-4 bg-white border-t flex gap-2">
+            <input 
+              disabled={isBlocked}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={isBlocked ? "آپ کو بلاک کر دیا گیا ہے" : "پیغام لکھیں..."} 
+              className="flex-1 p-3 bg-gray-100 rounded-xl outline-none text-sm"
+            />
+            <button 
+              onClick={sendMessage}
+              disabled={isBlocked}
+              className="bg-[#4A0E0E] text-[#D4AF37] p-3 rounded-xl active:scale-95 transition-all"
+            >
+              <Send size={20} />
+            </button>
           </div>
         </div>
       )}
-
-      {/* Profile Settings Modal */}
-      {view === 'settings' && (
-        <div className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-end">
-          <div className="w-full bg-white rounded-t-[40px] relative animate-in slide-in-from-bottom duration-300">
-            <button onClick={() => setView('home')} className="absolute top-4 left-6 text-2xl text-gray-400">×</button>
-            <ProfileSettings />
-          </div>
-        </div>
-      )}
-
-      {/* Footer Nav */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] bg-[#4A0E0E] p-4 flex justify-around rounded-full shadow-2xl z-[100] border border-[#D4AF37]/30">
-        <Home 
-          className={`cursor-pointer transition-all ${view === 'home' ? 'text-[#D4AF37] scale-110' : 'text-[#D4AF37]/40'}`} 
-          onClick={() => setView('home')} 
-          size={24}
-        />
-        <div 
-          className="bg-[#D4AF37] p-3 rounded-full -mt-12 border-4 border-[#FDF5F5] shadow-lg cursor-pointer hover:rotate-12 transition-transform" 
-          onClick={() => { setIsPremium(true); alert("Premium Active: اب آپ ڈبل کلک کر کے چیٹ کر سکتے ہیں!"); }}
-        >
-          <Heart size={28} fill="#4A0E0E" stroke="#4A0E0E" />
-        </div>
-        <User 
-          className={`cursor-pointer transition-all ${view === 'profile' ? 'text-[#D4AF37] scale-110' : 'text-[#D4AF37]/40'}`} 
-          onClick={() => setView('profile')} 
-          size={24}
-        />
+      
+      <div className="p-10 text-center">
+        <h1 className="text-[#4A0E0E] font-bold">براہ کرم کسی پروفائل پر ڈبل کلک کریں</h1>
+        <p className="text-xs text-gray-500 mt-2">چیٹ سسٹم اب ایڈمن پینل (دوسری ریپو) سے منسلک ہے</p>
       </div>
     </div>
   );
