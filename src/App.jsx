@@ -1,55 +1,83 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, Bell, Search, Home, Heart, MessageCircle, User, Settings2 } from 'lucide-react';
+import { Menu, Bell, Heart, MessageCircle, User, Home, Search, Sliders } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { db } from './utils/firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import Discover from './pages/Discover';
 
 const App = () => {
   const [profiles, setProfiles] = useState([]);
+  const [activeTab, setActiveTab] = useState('discover');
 
   useEffect(() => {
     const q = query(collection(db, "profiles"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setProfiles(data.length > 0 ? data : [{
-        id: '1', fullName: "Ayesha", age: 24, education: "Masters in Psychology", city: "Lahore", 
-        profileImg: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400"
-      }]);
+      setProfiles(data.length > 0 ? data : [
+        { id: '1', fullName: "Ayesha", age: 24, education: "Masters in Psychology", city: "Lahore", profileImg: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400" },
+        { id: '2', fullName: "Sarah", age: 27, education: "Doctor", city: "Karachi", profileImg: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400" }
+      ]);
     });
     return () => unsubscribe();
   }, []);
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-[#FDF5F5] pb-32 relative font-sans" dir="rtl">
-      {/* Premium Header */}
-      <header className="bg-[#4A0E0E] pt-12 pb-28 px-6 rounded-b-[60px] shadow-2xl">
-        <div className="flex justify-between items-center mb-8">
-          <Menu className="text-yellow-500" />
-          <h1 className="text-yellow-500 text-3xl font-serif font-bold italic">Azwaj</h1>
-          <Bell className="text-yellow-500" />
+    <div className="max-w-md mx-auto min-h-screen bg-[#FDF5F5] flex flex-col font-sans relative overflow-hidden" dir="rtl">
+      
+      {/* Header Section */}
+      <header className="bg-[#4A0E0E] pt-12 pb-20 rounded-b-[50px] shadow-2xl relative">
+        <div className="flex justify-between items-center px-6 mb-6">
+          <Menu className="text-[#D4AF37] cursor-pointer" size={28} />
+          <h1 className="text-[#D4AF37] text-3xl font-serif font-bold italic tracking-widest">AZWAJ</h1>
+          <div className="relative">
+            <Bell className="text-[#D4AF37]" size={28} />
+            <span className="absolute -top-1 -right-1 bg-red-500 w-3 h-3 rounded-full border-2 border-[#4A0E0E]"></span>
+          </div>
         </div>
-        
+
         {/* Search Bar */}
-        <div className="relative group">
-          <Search className="absolute right-4 top-4 text-gray-400" size={20} />
-          <input type="text" placeholder="نام، شہر یا پیشہ تلاش کریں..." 
-            className="w-full p-4 pr-12 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-white placeholder-gray-400 outline-none" />
-          <Settings2 className="absolute left-4 top-4 text-yellow-500" size={20} />
+        <div className="px-6 relative group">
+          <div className="absolute inset-y-0 right-10 flex items-center pointer-events-none">
+            <Search className="text-gray-400" size={20} />
+          </div>
+          <input 
+            type="text" 
+            placeholder="Search by name, city..." 
+            className="w-full bg-white/95 py-4 pr-12 pl-12 rounded-full shadow-inner outline-none focus:ring-2 ring-[#D4AF37] text-right"
+          />
+          <div className="absolute inset-y-0 left-10 flex items-center">
+            <Sliders className="text-[#4A0E0E]" size={20} />
+          </div>
         </div>
       </header>
 
-      <Discover profiles={profiles} />
+      {/* Main Content */}
+      <main className="flex-grow -mt-10 relative z-10 px-4">
+        <Discover profiles={profiles} />
+      </main>
 
       {/* Navigation Footer */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#4A0E0E] p-4 flex justify-around items-center rounded-t-[40px] shadow-[0_-10px_30px_rgba(0,0,0,0.3)] z-[100]">
-        <Home className="text-yellow-500" />
-        <Heart className="text-gray-400" />
-        <div className="bg-yellow-500 p-4 rounded-full -mt-12 shadow-xl border-4 border-[#FDF5F5]">
-           <Heart className="text-[#4A0E0E]" fill="currentColor" />
+      <footer className="fixed bottom-0 max-w-md w-full bg-[#4A0E0E] py-4 rounded-t-[30px] shadow-[0_-10px_20px_rgba(0,0,0,0.2)] flex justify-around items-center z-50 border-t border-yellow-600/30">
+        <button onClick={() => setActiveTab('discover')} className={`flex flex-col items-center ${activeTab === 'discover' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
+          <Home size={24} />
+          <span className="text-[10px] mt-1">Discover</span>
+        </button>
+        <button onClick={() => setActiveTab('matches')} className={`flex flex-col items-center ${activeTab === 'matches' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
+          <Heart size={24} />
+          <span className="text-[10px] mt-1">Matches</span>
+        </button>
+        <div className="bg-white p-3 rounded-full -mt-12 shadow-lg border-4 border-[#4A0E0E]">
+          <Heart size={32} className="text-[#4A0E0E]" fill="#4A0E0E" />
         </div>
-        <MessageCircle className="text-gray-400" />
-        <User className="text-gray-400" />
-      </nav>
+        <button onClick={() => setActiveTab('messages')} className={`flex flex-col items-center ${activeTab === 'messages' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
+          <MessageCircle size={24} />
+          <span className="text-[10px] mt-1">Messages</span>
+        </button>
+        <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center ${activeTab === 'profile' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
+          <User size={24} />
+          <span className="text-[10px] mt-1">Profile</span>
+        </button>
+      </footer>
     </div>
   );
 };
