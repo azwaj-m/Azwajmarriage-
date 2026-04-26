@@ -1,24 +1,27 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Heart, X, Star } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { EffectCards } from 'swiper/modules';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Heart, X, Star, CheckCircle, SlidersHorizontal } from 'lucide-react';
 
-const Discover = ({ profiles }) => {
+import 'swiper/css';
+import 'swiper/css/effect-cards';
+
+const Discover = ({ profiles, rotation, setRotation }) => {
   return (
-    <div className="flex flex-col items-center">
+    <div className="w-full flex flex-col items-center">
       
-      {/* Circular Profile Swiper (Background Decor) */}
-      <div className="relative w-full h-[150px] flex justify-center items-end opacity-80 pointer-events-none">
-        {profiles.slice(0, 7).map((p, i) => {
-          const angle = (i / (7 - 1)) * Math.PI; // Half circle logic
-          const x = Math.cos(angle) * 160;
-          const y = Math.sin(angle) * 80;
+      {/* Circular Swiper - Positioned above the card stack */}
+      <div className="relative w-full h-[120px] mb-6 flex justify-center items-end opacity-70 pointer-events-none z-10">
+        {profiles.slice(0, 5).map((p, i) => {
+          const angle = (i / (5 - 1)) * Math.PI; // Half circle logic
+          const x = Math.cos(angle) * 170;
+          const y = Math.sin(angle) * 70;
           return (
             <motion.div 
               key={p.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="absolute w-14 h-14 rounded-full border-2 border-yellow-500 overflow-hidden shadow-lg bg-white"
-              style={{ transform: `translate(${x}px, ${-y}px)` }}
+              className="absolute w-14 h-14 rounded-full border-[3px] border-[#D4AF37]/60 overflow-hidden shadow-lg bg-white"
+              style={{ transform: `translate(${x}px, ${-y}px) rotate(-${rotation}deg)` }}
             >
               <img src={p.profileImg} className="w-full h-full object-cover" alt="" />
             </motion.div>
@@ -26,50 +29,74 @@ const Discover = ({ profiles }) => {
         })}
       </div>
 
-      {/* Main Profile Card */}
-      <div className="relative w-full max-w-[320px] aspect-[3/4] -mt-12 group">
-        <AnimatePresence>
-          {profiles.slice(0, 1).map((profile) => (
-            <motion.div
-              key={profile.id}
-              className="absolute inset-0 bg-white rounded-[40px] shadow-2xl overflow-hidden border-4 border-white cursor-grab active:cursor-grabbing"
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-            >
-              <img src={profile.profileImg} className="w-full h-full object-cover" alt={profile.fullName} />
+      {/* Main Tinder-style Card Stack */}
+      <main className="relative z-20 flex justify-center mb-10 group">
+        <Swiper 
+          effect={'cards'} 
+          grabCursor={true} 
+          modules={[EffectCards]} 
+          className="w-[290px] h-[370px]"
+          onPan={(swiper) => setRotation(swiper.translate * 0.1)}
+        >
+          {profiles.map(user => (
+            <SwiperSlide key={user.id} className="rounded-[40px] bg-white border-[6px] border-white shadow-2xl overflow-hidden relative group active:border-[#D4AF37]">
+              <img src={user.profileImg} className="w-full h-full object-cover group-active:scale-105 transition-transform duration-500" alt={user.fullName} />
               
-              {/* Overlay Content */}
-              <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent text-white">
-                <h2 className="text-2xl font-bold flex items-center gap-2">
-                  {profile.fullName}, {profile.age}
-                  <span className="bg-yellow-500 w-4 h-4 rounded-full flex items-center justify-center border border-white">
-                    <Star size={10} fill="white" className="text-white" />
-                  </span>
-                </h2>
-                <p className="text-gray-200 text-sm mt-1">{profile.education}</p>
-                <p className="text-yellow-500 font-medium text-xs mt-1">📍 {profile.city}, Pakistan</p>
+              {/* Premium Gradient Overlay with Right-to-Left text */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 p-6 flex flex-col justify-end text-white text-right" dir="rtl">
+                <div className="flex items-center gap-2 mb-2">
+                   {user.verificationStatus && <CheckCircle size={18} className="text-yellow-500 fill-yellow-500/20" />}
+                   <h3 className="text-2xl font-bold">{user.fullName}, {user.age || '24'}</h3>
+                </div>
+                <p className="text-sm opacity-90">{user.education || 'Masters in Psychology'}</p>
+                <p className="text-xs opacity-80">{user.city || 'Lahore, Pakistan'} • {user.religion || 'Muslim'}</p>
               </div>
-            </motion.div>
+            </SwiperSlide>
           ))}
-        </AnimatePresence>
+        </Swiper>
+      </main>
+
+      {/* High-End Action Buttons (Pass, Like, Super Like) */}
+      <div className="flex items-center gap-8 mb-12 z-30">
+        <div className="flex flex-col items-center gap-2.5">
+          <button className="w-16 h-16 rounded-full bg-white shadow-2xl flex items-center justify-center text-red-600 border border-gray-100 active:scale-90 active:bg-gray-50 transition-all">
+            <X size={32} strokeWidth={3} />
+          </button>
+          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Pass</span>
+        </div>
+
+        <div className="flex flex-col items-center gap-2.5">
+          <button className="w-22 h-22 rounded-full bg-gradient-to-br from-[#4A0E0E] to-[#631212] shadow-[0_15px_40px_rgba(74,14,14,0.4)] flex items-center justify-center text-[#D4AF37] border-4 border-[#D4AF37]/30 active:scale-95 transition-transform">
+            <Heart size={44} fill="currentColor" />
+          </button>
+          <span className="text-[10px] font-bold text-[#4A0E0E] uppercase tracking-widest">Like</span>
+        </div>
+
+        <div className="flex flex-col items-center gap-2.5">
+          <button className="w-16 h-16 rounded-full bg-white shadow-2xl flex items-center justify-center text-yellow-600 border border-gray-100 active:scale-90 active:bg-gray-50 transition-all">
+            <Star size={32} fill="currentColor" />
+          </button>
+          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Super Like</span>
+        </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-6 mt-8 mb-24">
-        <button className="bg-white p-4 rounded-full shadow-lg text-red-500 active:scale-90 transition-all border border-gray-100">
-          <X size={28} />
-        </button>
-        <button className="bg-[#4A0E0E] p-6 rounded-full shadow-xl text-[#D4AF37] active:scale-90 transition-all border-2 border-[#D4AF37]">
-          <Heart size={36} fill="#D4AF37" />
-        </button>
-        <button className="bg-white p-4 rounded-full shadow-lg text-yellow-600 active:scale-90 transition-all border border-gray-100">
-          <Star size={28} fill="currentColor" />
-        </button>
+      {/* Feature Icons Banner - Correctmodular placement */}
+      <div className="grid grid-cols-4 gap-2 bg-white/80 backdrop-blur-sm mx-6 p-5 rounded-3xl border border-gray-100 shadow-xl mb-12 relative z-10 w-[90%]">
+        {[
+          { icon: <CheckCircle size={22} />, label: "Verified Profiles" },
+          { icon: "🔒", label: "Private & Secure" },
+          { icon: <Heart size={22} />, label: "Serious Matches" },
+          { icon: "💬", label: "Meaningful Connections" }
+        ].map((item, idx) => (
+          <div key={idx} className={`flex flex-col items-center text-center ${idx !== 0 ? 'border-l border-gray-200 pl-2' : ''}`}>
+            <div className="text-yellow-600 mb-1">{item.icon}</div>
+            <span className="text-[8px] font-bold leading-tight">{item.label}</span>
+          </div>
+        ))}
       </div>
+
     </div>
   );
 };
-
-const AnimatePresence = ({ children }) => <>{children}</>; // Simple placeholder for framer-motion
 
 export default Discover;
