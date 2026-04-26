@@ -12,7 +12,7 @@ const Discover = ({ profiles, rotation, setRotation }) => {
     <div className="w-full flex flex-col items-center">
       
       {/* Circular Swiper - Positioned above the card stack */}
-      <div className="relative w-full h-[120px] mb-6 flex justify-center items-end opacity-70 pointer-events-none z-10">
+      <div className="relative w-full h-[80px] mb-6 flex justify-center items-end opacity-70 pointer-events-none z-0">
         {profiles.slice(0, 5).map((p, i) => {
           const angle = (i / (5 - 1)) * Math.PI; // Half circle logic
           const x = Math.cos(angle) * 170;
@@ -32,13 +32,13 @@ const Discover = ({ profiles, rotation, setRotation }) => {
       {/* Main Tinder-style Card Stack */}
       <main className="relative z-20 flex justify-center mb-10 group">
         <Swiper 
-          effect={'cards'} 
+          effect={'cards'} cardsEffect={{ slideShadows: false, rotate: true, perSlideOffset: 8, perSlideRotate: 2 }} 
           grabCursor={true} 
           modules={[EffectCards]} 
           className="w-[290px] h-[370px]"
           onPan={(swiper) => setRotation(swiper.translate * 0.1)}
         >
-          {profiles.slice(0, 10).map(user => (
+          {[...profiles, ...Array(10).fill(profiles[0])].slice(0, 10).map((user, i) => (
             <SwiperSlide key={user.id} className="rounded-[40px] bg-white border-[6px] border-white shadow-2xl overflow-hidden relative group active:border-[#D4AF37]">
               <img src={user.profileImg} className="w-full h-full object-cover group-active:scale-105 transition-transform duration-500" alt={user.fullName} />
               
@@ -81,7 +81,7 @@ const Discover = ({ profiles, rotation, setRotation }) => {
       </div>
 
       {/* Feature Icons Banner - Correctmodular placement */}
-      <div className="grid grid-cols-4 gap-2 bg-white/80 backdrop-blur-sm mx-6 p-5 rounded-3xl border border-gray-100 shadow-xl mb-12 relative z-10 w-[90%]">
+      <div className="grid grid-cols-4 gap-2 bg-white/80 backdrop-blur-sm mx-6 p-5 rounded-3xl border border-gray-100 shadow-xl mb-12 relative z-0 w-[90%]">
         {[
           { icon: <CheckCircle size={22} />, label: "Verified Profiles" },
           { icon: "🔒", label: "Private & Secure" },
