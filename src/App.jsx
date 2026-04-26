@@ -5,11 +5,11 @@ import { Menu, Bell, X, Plus, User, LogOut, Heart, CheckCircle } from 'lucide-re
 
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { db } from './utils/firebase';
+import { db } from './src/utils/firebase';
 
 import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore';
 
-import Discover from './pages/Discover';
+import Discover from './src/pages/Discover';
 
 
 
