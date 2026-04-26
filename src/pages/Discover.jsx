@@ -13,7 +13,7 @@ const Discover = ({ profiles, rotation, setRotation }) => {
       
       {/* Circular Swiper - Positioned above the card stack */}
       <div className="relative w-full h-[120px] mb-6 flex justify-center items-end opacity-100 pointer-events-none z-10">
-        {profiles.slice(0, 10).map((p, i) => {
+        {(profiles || []).slice(0, 10).map((p, i) => {
           const angle = (i /  (10 - 1)) * Math.PI; // Half circle logic
           const x = Math.cos(angle) * 140;
           const y = Math.sin(angle) * 70;
