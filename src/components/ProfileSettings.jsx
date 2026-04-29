@@ -1,5 +1,4 @@
 
---- File: src/components/ProfileSettings.jsx ---
 
 import React, { useState } from 'react';
 
