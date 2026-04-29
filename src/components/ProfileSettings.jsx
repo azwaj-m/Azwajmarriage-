@@ -1,33 +1,48 @@
 import React, { useState } from 'react';
-import { User, Shield, Lock, LogOut, Eye, EyeOff } from 'lucide-react';
-import { auth } from '../utils/firebase';
+import { Camera, Shield, LogOut, Check } from 'lucide-react';
 
-const ProfileSettings = ({ userProfile = {} }) => {
-  const [hideAddress, setHideAddress] = useState(false);
+const ProfileSettings = () => {
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setUploading(true);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result);
+        setUploading(false);
+        alert("تصویر کامیابی سے اپلوڈ ہو گئی!");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
-    <div className="p-8 pb-12 font-sans text-right" dir="rtl">
-      <h2 className="text-2xl font-bold text-[#4A0E0E] mb-6 border-b pb-2">پروفائل سیٹنگز</h2>
-      
-      <div className="space-y-4">
-        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-[#4A0E0E] p-2 rounded-lg text-[#D4AF37]"><Shield size={18}/></div>
-            <div>
-              <p className="font-bold text-sm">ایڈریس کی رازداری</p>
-              <p className="text-xs text-gray-500">کیا آپ اپنا ایڈریس چھپانا چاہتے ہیں؟</p>
-            </div>
-          </div>
-          <button onClick={() => setHideAddress(!hideAddress)}>
-            {hideAddress ? <EyeOff className="text-red-500" /> : <Eye className="text-green-500" />}
-          </button>
+    <div className="p-8 text-right" dir="rtl">
+      <div className="flex flex-col items-center mb-8">
+        <div className="relative w-32 h-32 rounded-full border-4 border-[#D4AF37] p-1 overflow-hidden bg-gray-200">
+          {image ? <img src={image} className="w-full h-full object-cover rounded-full" /> : <div className="flex items-center justify-center h-full text-gray-400">تصویر نہیں ہے</div>}
+          <label className="absolute bottom-1 right-1 bg-[#4A0E0E] p-2 rounded-full text-[#D4AF37] cursor-pointer shadow-lg">
+            <Camera size={20} />
+            <input type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
+          </label>
         </div>
+        <h3 className="mt-4 font-bold text-[#4A0E0E]">پروفائل تصویر اپلوڈ کریں</h3>
+      </div>
 
-        <button onClick={() => auth.signOut()} className="w-full mt-6 flex items-center justify-center gap-2 p-4 bg-red-50 text-red-600 rounded-2xl font-bold">
-          <LogOut size={20} /> سائن آؤٹ کریں
+      <div className="space-y-4">
+        <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+          <span className="font-bold">اکاؤنٹ ویریفیکیشن</span>
+          <Check className="text-green-500" />
+        </div>
+        <button className="w-full p-4 bg-red-50 text-red-600 rounded-2xl font-bold flex items-center justify-center gap-2">
+          <LogOut size={20} /> لاگ آؤٹ
         </button>
       </div>
     </div>
   );
 };
+
 export default ProfileSettings;
