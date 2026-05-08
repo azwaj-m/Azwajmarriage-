@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from './context/UserContext';
 import { SearchProvider, useSearch } from './context/SearchContext';
+import { AuthService } from './services/AuthService';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import Sidebar from './components/Sidebar';
@@ -10,6 +11,7 @@ import NotificationToast from './components/NotificationToast';
 import ProfileSettings from './components/ProfileSettings';
 
 // Pages
+import Login from './pages/Login';
 import Home from './pages/Home';
 import Discover from './pages/Discover';
 import Chat from './pages/Chat';
@@ -20,36 +22,56 @@ import Verification from './pages/Verification';
 import HelpSupport from './pages/HelpSupport';
 import BlockedProfiles from './pages/BlockedProfiles';
 
-// اندرونی فلو اور رینڈرنگ کنٹرول کرنے والا مین ایپ کمپوننٹ
 const AppContent = () => {
   const userContext = useUser();
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // لاگ ان اسٹیٹ
+  const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
   const [currentView, setCurrentView] = useState('main');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
-  
-  // باٹم پٹی کے ایکٹیو بٹنز کے لیے نوٹیفیکیشن فلٹر کی اسٹیٹ
   const [notificationFilter, setNotificationFilter] = useState('all');
-
-  // لائیو نوٹیفیکیشن ٹوسٹ کی اسٹیٹ
   const [activeNotification, setActiveNotification] = useState(null);
 
-  // عالمی سرچ انجن سے نتائج اور اسٹیٹ حاصل کرنا
   const { searchQuery, setSearchQuery, filteredResults } = useSearch();
+
+  // ۱۔ ایپ لوڈ ہوتے ہی ڈیوائس پر لاگ ان سیشن چیک کریں
+  useEffect(() => {
+    const activeSession = AuthService.checkSessionValidity();
+    if (activeSession) {
+      setIsAuthenticated(true);
+      setCurrentUser(activeSession);
+    }
+  }, []);
+
+  // کامیاب لاگ ان کا ہینڈلر
+  const handleLoginSuccess = (user) => {
+    setIsAuthenticated(true);
+    setCurrentUser(user);
+    setActiveTab('home');
+    setCurrentView('main');
+  };
+
+  // لاگ آؤٹ ہینڈلر
+  const handleLogout = async () => {
+    await AuthService.logout();
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setIsSidebarOpen(false);
+  };
 
   useEffect(() => {
     console.log("--- APP INITIALIZED ---");
-    console.log("Context Data:", userContext);
-
-    const welcomeTimer = setTimeout(() => {
-      setActiveNotification({
-        type: 'chat',
-        title: 'عائشہ خان',
-        message: 'السلام علیکم! کیا آپ بات کرنے کے لیے دستیاب ہیں؟'
-      });
-    }, 4000);
-
-    return () => clearTimeout(welcomeTimer);
+    if (userContext) {
+      const welcomeTimer = setTimeout(() => {
+        setActiveNotification({
+          type: 'chat',
+          title: 'عائشہ خان',
+          message: 'السلام علیکم! کیا آپ بات کرنے کے لیے دستیاب ہیں؟'
+        });
+      }, 4000);
+      return () => clearTimeout(welcomeTimer);
+    }
   }, [userContext]);
 
   if (!userContext) {
@@ -63,6 +85,11 @@ const AppContent = () => {
 
   const { loading, userData } = userContext;
 
+  // اگر صارف لاگ ان نہیں ہے، تو اسے صرف لاگ ان پیج دکھائیں (Auth Gate)
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
   // تصدیق کا قانون لاگو کرنے کا مرکزی فنکشن
   const requireVerification = (actionCallback) => {
     const status = userData?.verificationStatus;
@@ -75,7 +102,6 @@ const AppContent = () => {
   };
 
   const handleTabChange = (tab) => {
-    console.log("Tab Changed to:", tab);
     setActiveTab(tab);
     setCurrentView('main');
   };
@@ -87,7 +113,6 @@ const AppContent = () => {
           case 'home':
             return (
               <Home
-                profiles={filteredResults}
                 setSelectedProfile={(profile) => {
                   requireVerification(() => setSelectedProfile(profile));
                 }}
@@ -114,9 +139,15 @@ const AppContent = () => {
               />
             );
           case 'profile':
-            return <ProfileManager />;
+            return <ProfileManager onLogout={handleLogout} />;
           default:
-            return <Home profiles={filteredResults} setSelectedProfile={setSelectedProfile} />;
+            return (
+              <Home 
+                setSelectedProfile={(profile) => {
+                  requireVerification(() => setSelectedProfile(profile));
+                }} 
+              />
+            );
         }
       }
 
@@ -144,7 +175,6 @@ const AppContent = () => {
   return (
     <div className="max-w-md mx-auto h-screen bg-[#FDF5F5] flex flex-col overflow-hidden relative shadow-2xl">
 
-      {/* پش نوٹیفیکیشن ٹوسٹ پاپ اپ */}
       {activeNotification && (
         <NotificationToast
           notification={activeNotification}
@@ -161,6 +191,7 @@ const AppContent = () => {
           setIsSidebarOpen(false);
         }}
         onEditProfile={() => setCurrentView('edit_profile')}
+        onLogout={handleLogout}
       />
 
       {currentView === 'edit_profile' ? (
@@ -169,8 +200,6 @@ const AppContent = () => {
         <>
           {activeTab !== 'chat' && activeTab !== 'profile' && currentView === 'main' && (
             <Header
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
               toggleSidebar={() => setIsSidebarOpen(true)}
               onNotificationClick={() => setActiveTab('notifications')}
             />
@@ -180,7 +209,6 @@ const AppContent = () => {
             {renderContent()}
           </main>
 
-          {/* باٹم پٹی سے کلکس کو نوٹیفیکیشن پیج پر بھیجنے کے لیے فنکشنز پاس کیے گئے ہیں */}
           <BottomNav 
             activeTab={activeTab} 
             setActiveTab={handleTabChange} 
@@ -189,7 +217,6 @@ const AppContent = () => {
         </>
       )}
 
-      {/* اگر پروفائل منتخب ہو چکی ہے تو ڈیٹیل ماڈل دکھائیں */}
       {selectedProfile && (
         <ProfileDetailModal
           profile={selectedProfile}
@@ -204,7 +231,6 @@ const AppContent = () => {
   );
 };
 
-// اصلی ایکسپورٹ جس پر سرچ پرووائیڈر لپیٹا گیا ہے
 const App = () => {
   return (
     <SearchProvider>
