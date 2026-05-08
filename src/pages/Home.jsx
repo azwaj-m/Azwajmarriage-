@@ -58,45 +58,47 @@ const Home = ({ setSelectedProfile }) => {
         </Swiper>
       </div>
 
+      {/* ٹاپ میچز ہوریزنٹل اسکرول لسٹ کا فکسڈ خوبصورت ڈیزائن */}
       <div className="px-5">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-[#4A0E0E] font-black text-xs uppercase tracking-[0.2em]">{t('top_matches')}</h3>
-          <div className="text-[9px] font-bold text-[#D4AF37] flex items-center gap-1 uppercase italic cursor-pointer">{t('explore_all')} <ChevronRight size={12} /></div>
+          <h3 className="text-[#4A0E0E] font-black text-xs uppercase tracking-[0.2em]">{t('top_matches', 'معزز رشتے')}</h3>
+          <div className="text-[9px] font-bold text-[#D4AF37] flex items-center gap-1 uppercase italic cursor-pointer">{t('explore_all', 'سب دیکھیں')} <ChevronRight size={12} /></div>
         </div>
-        <div className="flex gap-5 overflow-x-auto no-scrollbar">
+        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 pr-1 snap-x snap-mandatory">
           {demoProfiles.map((p) => (
-            <div key={p.id} className="flex flex-col items-center gap-2 flex-shrink-0">
-              <div className="relative p-1 rounded-full border-2 border-[#D4AF37] shadow-sm">
+            <div key={p.id} onClick={() => setSelectedProfile(p)} className="flex flex-col items-center gap-2 flex-shrink-0 snap-start cursor-pointer">
+              <div className="relative p-1 rounded-full border-2 border-[#D4AF37] shadow-sm bg-white">
                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white relative">
                   <img src={p.img} alt={p.name} className="w-full h-full object-cover" />
                 </div>
-                {/* چھوٹی گول تصاویر کے اوپر بھی ہلکا سا بیج شو کرنے کے لیے */}
+                {/* گول تصویر کے اوپر فکسڈ ویریفائیڈ بیج */}
                 {p.verificationStatus === 'verified' && (
                   <div className="absolute bottom-0 right-0 transform translate-x-1 translate-y-1 scale-75">
                     <VerifiedBadge status={p.verificationStatus} />
                   </div>
                 )}
               </div>
-              <span className="text-[10px] font-black text-[#4A0E0E] uppercase">{p.name.split(' ')[0]}</span>
+              <span className="text-[10px] font-black text-[#4A0E0E] uppercase tracking-wider">{p.name.split(' ')[0]}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="px-6 flex justify-between">
-         <TrustBadge label={t('verified_label')} sub={t('verified_sub')} />
-         <TrustBadge label={t('privacy_label')} sub={t('privacy_sub')} />
-         <TrustBadge label={t('serious_label')} sub={t('serious_sub')} />
+      {/* لیبلز ٹرانسلیشن کے فال بیکز کے ساتھ بالکل فعال کر دیے گئے ہیں */}
+      <div className="px-6 flex justify-between gap-2">
+         <TrustBadge label={t('verified_label', '100% تصدیق شدہ')} sub={t('verified_sub', 'شناختی کارڈ ویریفائیڈ')} />
+         <TrustBadge label={t('privacy_label', 'محفوظ پرائیویسی')} sub={t('privacy_sub', 'ڈیٹا مکمل پوشیدہ')} />
+         <TrustBadge label={t('serious_label', 'سنجیدہ رشتے')} sub={t('serious_sub', 'صرف فیملی ممبرز')} />
       </div>
     </div>
   );
 };
 
 const TrustBadge = ({ label, sub }) => (
-  <div className="flex flex-col items-center text-center">
-    <div className="bg-[#F5E6D3] p-2 rounded-xl mb-1"><ShieldCheck size={14} className="text-[#4A0E0E]" /></div>
-    <h4 className="text-[8px] font-black text-[#4A0E0E] uppercase">{label}</h4>
-    <p className="text-[7px] text-gray-400 font-bold">{sub}</p>
+  <div className="flex flex-col items-center text-center flex-1 max-w-[110px]">
+    <div className="bg-[#F5E6D3] p-2 rounded-xl mb-1.5"><ShieldCheck size={14} className="text-[#4A0E0E]" /></div>
+    <h4 className="text-[8px] font-black text-[#4A0E0E] uppercase tracking-wider leading-tight min-h-[12px]">{label}</h4>
+    <p className="text-[7px] text-gray-400 font-bold mt-0.5 leading-normal">{sub}</p>
   </div>
 );
 
