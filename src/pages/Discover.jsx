@@ -1,98 +1,81 @@
-import React from 'react';
-import { MapPin, Briefcase, Star } from 'lucide-react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-// آپ کے فائل ٹری کے مطابق درست پاتھ
 import { useSearchTranslator } from '../hooks/useSearchTranslator';
+import { Search } from 'lucide-react';
 
-const Discover = ({ profiles, setSelectedProfile }) => {
+const Discover = () => {
   const { t } = useTranslation();
-  
-  // ہک کو استعمال کرتے ہوئے پروفائلز کا ترجمہ حاصل کرنا
-  // یہ خودکار طور پر 'bio' یا 'description' کو ترجمہ کرے گا
-  const { translatedResults, isTranslating } = useSearchTranslator(profiles);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { matchProfile } = useSearchTranslator();
+
+  // ڈیمو یا ڈیٹا بیس سے آنے والے پروفائلز کا ڈیٹا
+  // (یقینی بنائیں کہ ان میں cityKey, countryKey اور jobKey موجود ہوں)
+  const [profiles, setProfiles] = useState([
+    {
+      id: 1,
+      name: "Sana Ali",
+      age: "26",
+      cityKey: "karachi",
+      countryKey: "pakistan",
+      jobKey: "designer",
+      photoURL: "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+    },
+    {
+      id: 2,
+      name: "Zainab",
+      age: "24",
+      cityKey: "lahore",
+      countryKey: "pakistan",
+      jobKey: "doctor",
+      photoURL: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80"
+    }
+  ]);
+
+  // ہر لفظ اور ہر زبان کے حساب سے فلٹر کرنا
+  const filteredProfiles = profiles.filter((profile) =>
+    matchProfile(profile, searchQuery)
+  );
 
   return (
-    <div className="p-4 bg-[#FDF5F5] min-h-full animate-in fade-in duration-700">
-      
-      {/* ہیڈنگ سیکشن */}
-      <div className="mb-6">
-        <h2 className="text-[#4A0E0E] text-2xl font-black italic uppercase tracking-wider">
-          {t('explore_all', 'Explore Matches')}
-        </h2>
-        <div className="w-20 h-1 bg-[#D4AF37] rounded-full mt-1"></div>
-        
-        {/* اگر ترجمہ ہو رہا ہو تو ایک چھوٹا سا انڈیکیٹر دکھائیں */}
-        {isTranslating ? (
-          <p className="text-[#D4AF37] text-[10px] mt-2 font-bold animate-pulse">
-            Translating profiles to your language...
-          </p>
-        ) : (
-          <p className="text-gray-500 text-xs mt-2 font-medium">
-            {t('search_placeholder', 'Find your perfect match from across the globe')}
-          </p>
-        )}
+    <div className="min-h-screen bg-[#FDF5F5] pb-24">
+      {/* سرچ بار انٹرفیس */}
+      <div className="p-4 max-w-md mx-auto">
+        <div className="relative flex items-center bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-1">
+          <Search size={20} className="text-gray-400 mr-2" />
+          <input
+            type="text"
+            placeholder={t('search_placeholder', 'Search by country, name, age...')}
+            className="w-full bg-transparent py-3 text-xs font-bold outline-none text-gray-700"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </div>
 
-      {/* پروفائل گرڈ */}
-      <div className="grid grid-cols-2 gap-4 pb-20">
-        {translatedResults && translatedResults.map((profile) => (
-          <div
-            key={profile.id}
-            className="bg-white rounded-[25px] overflow-hidden shadow-md border border-gray-100 flex flex-col hover:shadow-xl transition-all active:scale-95"
-          >
-            {/* امیج سیکشن */}
-            <div className="relative h-40">
-              <img
-                src={profile.image || "https://readymadeui.com/profile_2.webp"}
-                alt={profile.fullName}
-                className="w-full h-full object-cover"
+      {/* فلٹر شدہ پروفائلز کی لسٹ */}
+      <div className="max-w-md mx-auto px-4 grid grid-cols-2 gap-4">
+        {filteredProfiles.length > 0 ? (
+          filteredProfiles.map((profile) => (
+            <div key={profile.id} className="bg-white p-4 rounded-[30px] shadow-sm border border-gray-100 text-center">
+              <img 
+                src={profile.photoURL} 
+                alt={profile.name} 
+                className="w-20 h-20 rounded-full mx-auto object-cover mb-2 border-2 border-[#D4AF37]"
               />
-              <div className="absolute top-2 right-2 bg-white/80 backdrop-blur-md p-1.5 rounded-full shadow-sm">
-                <Star size={12} className="text-[#D4AF37] fill-[#D4AF37]" />
-              </div>
+              <h3 className="font-black text-[#4A0E0E] text-xs uppercase">{profile.name}</h3>
+              <p className="text-[10px] text-gray-500 font-bold">
+                {profile.age} • {t(profile.jobKey)}
+              </p>
+              <p className="text-[9px] text-[#D4AF37] font-black uppercase mt-1">
+                {t(profile.cityKey)}, {t(profile.countryKey)}
+              </p>
             </div>
-
-            {/* ڈیٹیلز سیکشن */}
-            <div className="p-3 flex-1 flex flex-col">
-              <h3 className="text-[#4A0E0E] font-black text-sm truncate">
-                {profile.fullName}
-              </h3>
-
-              <div className="mt-2 space-y-1">
-                {/* پیشہ - Static i18n کے ساتھ */}
-                <div className="flex items-center gap-1.5 text-gray-500">
-                  <Briefcase size={10} className="text-[#D4AF37]" />
-                  <span className="text-[10px] font-bold">
-                    {t(profile.profession?.toLowerCase(), profile.profession || "Professional")}
-                  </span>
-                </div>
-
-                {/* لوکیشن اور عمر */}
-                <div className="flex items-center gap-1.5 text-gray-500">
-                  <MapPin size={10} className="text-[#D4AF37]" />
-                  <span className="text-[10px] font-medium">
-                    {profile.age} {t('age')}, {t(profile.city?.toLowerCase(), profile.city)}
-                  </span>
-                </div>
-
-                {/* پروفائل کا مختصر ترجمہ شدہ بائیو (اگر دستیاب ہو) */}
-                {profile.displayBio && (
-                  <p className="text-[9px] text-gray-400 line-clamp-1 italic mt-1">
-                    {profile.displayBio}
-                  </p>
-                )}
-              </div>
-
-              {/* ویو بٹن */}
-              <button
-                onClick={() => setSelectedProfile(profile)}
-                className="mt-4 w-full bg-[#4A0E0E] text-[#D4AF37] py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter shadow-lg active:bg-[#3D1212] transition-colors"
-              >
-                {t('view_profile', 'View Profile')}
-              </button>
-            </div>
+          ))
+        ) : (
+          <div className="col-span-2 text-center py-12 text-gray-400 text-xs font-bold">
+            کوئی نتیجہ نہیں ملا!
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
