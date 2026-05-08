@@ -1,13 +1,13 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from './context/UserContext';
-import { initialProfiles } from './utils/seedData';
+import { SearchProvider, useSearch } from './context/SearchContext';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import Sidebar from './components/Sidebar';
 import ProfileDetailModal from './components/ProfileDetailModal';
 import EditProfileForm from './components/EditProfileForm';
 import NotificationToast from './components/NotificationToast';
-import ProfileSettings from './components/ProfileSettings'; // پرائیویسی سیٹنگز امپورٹ کی گئیں
+import ProfileSettings from './components/ProfileSettings';
 
 // Pages
 import Home from './pages/Home';
@@ -17,19 +17,25 @@ import Notifications from './pages/Notifications';
 import ProfileManager from './pages/ProfileManager';
 import Subscription from './pages/Subscription';
 import Verification from './pages/Verification';
-import HelpSupport from './pages/HelpSupport'; // ہیلپ اینڈ سپورٹ پیج امپورٹ کیا گیا
-import BlockedProfiles from './pages/BlockedProfiles'; // بلاک شدہ لسٹ پیج امپورٹ کیا گیا
+import HelpSupport from './pages/HelpSupport';
+import BlockedProfiles from './pages/BlockedProfiles';
 
-const App = () => {
+// اندرونی فلو اور رینڈرنگ کنٹرول کرنے والا مین ایپ کمپوننٹ
+const AppContent = () => {
   const userContext = useUser();
   const [activeTab, setActiveTab] = useState('home');
   const [currentView, setCurrentView] = useState('main');
-  const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
   
-  // لائیو نوٹیفکیشن ٹوسٹ کی اسٹیٹ
+  // باٹم پٹی کے ایکٹیو بٹنز کے لیے نوٹیفیکیشن فلٹر کی اسٹیٹ
+  const [notificationFilter, setNotificationFilter] = useState('all');
+
+  // لائیو نوٹیفیکیشن ٹوسٹ کی اسٹیٹ
   const [activeNotification, setActiveNotification] = useState(null);
+
+  // عالمی سرچ انجن سے نتائج اور اسٹیٹ حاصل کرنا
+  const { searchQuery, setSearchQuery, filteredResults } = useSearch();
 
   useEffect(() => {
     console.log("--- APP INITIALIZED ---");
@@ -68,20 +74,6 @@ const App = () => {
     }
   };
 
-  const filteredProfiles = useMemo(() => {
-    try {
-      if (!searchQuery) return initialProfiles;
-      return initialProfiles.filter(p =>
-        p.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.profession.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    } catch (e) {
-      console.error("Filter Error:", e);
-      return [];
-    }
-  }, [searchQuery]);
-
   const handleTabChange = (tab) => {
     console.log("Tab Changed to:", tab);
     setActiveTab(tab);
@@ -95,7 +87,7 @@ const App = () => {
           case 'home':
             return (
               <Home
-                profiles={filteredProfiles}
+                profiles={filteredResults}
                 setSelectedProfile={(profile) => {
                   requireVerification(() => setSelectedProfile(profile));
                 }}
@@ -104,7 +96,7 @@ const App = () => {
           case 'discover':
             return (
               <Discover
-                profiles={filteredProfiles}
+                profiles={filteredResults}
                 setSelectedProfile={(profile) => {
                   requireVerification(() => setSelectedProfile(profile));
                 }}
@@ -113,14 +105,21 @@ const App = () => {
           case 'chat':
             return <Chat />;
           case 'notifications':
-            return <Notifications setActiveTab={setActiveTab} setCurrentView={setCurrentView} />;
+            return (
+              <Notifications 
+                setActiveTab={setActiveTab} 
+                setCurrentView={setCurrentView} 
+                activeFilter={notificationFilter}
+                setNotificationFilter={setNotificationFilter}
+              />
+            );
           case 'profile':
             return <ProfileManager />;
           default:
-            return <Home profiles={filteredProfiles} setSelectedProfile={setSelectedProfile} />;
+            return <Home profiles={filteredResults} setSelectedProfile={setSelectedProfile} />;
         }
       }
-      
+
       // سائیڈ بار ویوز کا کنٹرول
       if (currentView === 'blocked') return <BlockedProfiles onBack={() => setCurrentView('main')} />;
       if (currentView === 'premium') return <Subscription />;
@@ -144,22 +143,22 @@ const App = () => {
 
   return (
     <div className="max-w-md mx-auto h-screen bg-[#FDF5F5] flex flex-col overflow-hidden relative shadow-2xl">
-      
+
       {/* پش نوٹیفیکیشن ٹوسٹ پاپ اپ */}
       {activeNotification && (
-        <NotificationToast 
-          notification={activeNotification} 
-          onClose={() => setActiveNotification(null)} 
+        <NotificationToast
+          notification={activeNotification}
+          onClose={() => setActiveNotification(null)}
         />
       )}
 
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        onAction={(v, t) => { 
-          setCurrentView(v); 
-          if(t) setActiveTab(t); 
-          setIsSidebarOpen(false); 
+        onAction={(v, t) => {
+          setCurrentView(v);
+          if(t) setActiveTab(t);
+          setIsSidebarOpen(false);
         }}
         onEditProfile={() => setCurrentView('edit_profile')}
       />
@@ -181,7 +180,12 @@ const App = () => {
             {renderContent()}
           </main>
 
-          <BottomNav activeTab={activeTab} setActiveTab={handleTabChange} />
+          {/* باٹم پٹی سے کلکس کو نوٹیفیکیشن پیج پر بھیجنے کے لیے فنکشنز پاس کیے گئے ہیں */}
+          <BottomNav 
+            activeTab={activeTab} 
+            setActiveTab={handleTabChange} 
+            setNotificationFilter={setNotificationFilter}
+          />
         </>
       )}
 
@@ -190,13 +194,22 @@ const App = () => {
         <ProfileDetailModal
           profile={selectedProfile}
           onClose={() => setSelectedProfile(null)}
-          onStartChat={(p) => { 
-            setActiveTab("chat"); 
-            setSelectedProfile(null); 
+          onStartChat={(p) => {
+            setActiveTab("chat");
+            setSelectedProfile(null);
           }}
         />
       )}
     </div>
+  );
+};
+
+// اصلی ایکسپورٹ جس پر سرچ پرووائیڈر لپیٹا گیا ہے
+const App = () => {
+  return (
+    <SearchProvider>
+      <AppContent />
+    </SearchProvider>
   );
 };
 
