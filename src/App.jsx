@@ -7,6 +7,7 @@ import Sidebar from './components/Sidebar';
 import ProfileDetailModal from './components/ProfileDetailModal';
 import EditProfileForm from './components/EditProfileForm';
 import NotificationToast from './components/NotificationToast';
+import ProfileSettings from './components/ProfileSettings'; // پرائیویسی سیٹنگز امپورٹ کی گئیں
 
 // Pages
 import Home from './pages/Home';
@@ -16,6 +17,8 @@ import Notifications from './pages/Notifications';
 import ProfileManager from './pages/ProfileManager';
 import Subscription from './pages/Subscription';
 import Verification from './pages/Verification';
+import HelpSupport from './pages/HelpSupport'; // ہیلپ اینڈ سپورٹ پیج امپورٹ کیا گیا
+import BlockedProfiles from './pages/BlockedProfiles'; // بلاک شدہ لسٹ پیج امپورٹ کیا گیا
 
 const App = () => {
   const userContext = useUser();
@@ -32,7 +35,6 @@ const App = () => {
     console.log("--- APP INITIALIZED ---");
     console.log("Context Data:", userContext);
 
-    // ڈویلپمنٹ ٹیسٹنگ کے لیے ۳ سیکنڈ بعد ایک خوبصورت لائیو ٹوسٹ الرٹ دکھائیں
     const welcomeTimer = setTimeout(() => {
       setActiveNotification({
         type: 'chat',
@@ -55,7 +57,7 @@ const App = () => {
 
   const { loading, userData } = userContext;
 
-  // تصدیق کا قانون لاگو کرنے کا مرکزی فنکشن (Muzz/Shaadi.com ماڈل)
+  // تصدیق کا قانون لاگو کرنے کا مرکزی فنکشن
   const requireVerification = (actionCallback) => {
     const status = userData?.verificationStatus;
     if (status === 'verified') {
@@ -118,9 +120,12 @@ const App = () => {
             return <Home profiles={filteredProfiles} setSelectedProfile={setSelectedProfile} />;
         }
       }
-      if (currentView === 'blocked') return <div className="p-10 text-center">🚫 بلاک شدہ لسٹ</div>;
+      
+      // سائیڈ بار ویوز کا کنٹرول
+      if (currentView === 'blocked') return <BlockedProfiles onBack={() => setCurrentView('main')} />;
       if (currentView === 'premium') return <Subscription />;
-      if (currentView === 'help') return <div className="p-10 text-center text-[#4A0E0E]">مدد اور سپورٹ</div>;
+      if (currentView === 'help') return <HelpSupport onBack={() => setCurrentView('main')} />;
+      if (currentView === 'privacy_settings') return <ProfileSettings onBack={() => setCurrentView('main')} />;
       if (currentView === 'verification') return <Verification onBack={() => setCurrentView('main')} />;
     } catch (err) {
       return <div className="p-5 text-red-500 font-mono text-xs">Render Error: {err.message}</div>;

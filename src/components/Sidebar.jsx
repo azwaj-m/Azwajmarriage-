@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../context/UserContext';
-import { 
-  User, Heart, ShieldAlert, Crown, HelpCircle, 
-  LogOut, X, Languages, Camera, ShieldCheck 
+import {
+  User, Heart, ShieldAlert, Crown, HelpCircle,
+  LogOut, X, Languages, Camera, ShieldCheck, Shield
 } from 'lucide-react';
 import LanguageSelectorModal from './LanguageSelectorModal';
 import VerifiedBadge from './VerifiedBadge';
@@ -23,9 +23,11 @@ const Sidebar = ({ isOpen, onClose, onAction, onEditProfile }) => {
     }
   };
 
+  // مینو آئٹمز میں پرائیویسی سیٹنگز (privacy_settings) اور ہیلپ سنٹر (help) کو فعال کر دیا گیا ہے
   const menuItems = [
     { id: 'profile', label: 'میری پروفائل', icon: User, action: () => onEditProfile() },
     { id: 'verification', label: 'شناختی تصدیق (CNIC)', icon: ShieldCheck, action: () => onAction('verification') },
+    { id: 'privacy_settings', label: 'پرائیویسی سیٹنگز', icon: Shield, action: () => onAction('privacy_settings') },
     { id: 'discover', label: 'پسندیدہ رشتے', icon: Heart, action: () => onAction('main', 'discover') },
     { id: 'blocked', label: 'بلاک شدہ لسٹ', icon: ShieldAlert, action: () => onAction('blocked') },
     { id: 'premium', label: 'پریمیم ممبرشپ', icon: Crown, action: () => onAction('premium') },
@@ -37,32 +39,32 @@ const Sidebar = ({ isOpen, onClose, onAction, onEditProfile }) => {
   return (
     <>
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-[150] backdrop-blur-sm" 
-          onClick={onClose} 
+        <div
+          className="fixed inset-0 bg-black/50 z-[150] backdrop-blur-sm"
+          onClick={onClose}
         />
       )}
 
       <div className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full w-72 bg-[#FDF5F5] z-[200] transform transition-transform duration-300 flex flex-col ${isOpen ? 'translate-x-0' : (isRTL ? 'translate-x-full' : '-translate-x-full')}`}>
-        
+
         <div className="bg-[#4A0E0E] p-8 text-center relative flex-shrink-0">
           <button onClick={onClose} className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} text-[#D4AF37]`}>
             <X size={24} />
           </button>
-          
+
           <div className="relative inline-block mt-4 group">
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
-            <div 
+            <div
               className="w-24 h-24 rounded-full border-4 border-[#D4AF37] overflow-hidden mx-auto shadow-xl cursor-pointer relative"
               onClick={() => fileInputRef.current.click()}
             >
-              <img src={userData?.profileImg} alt="User" className="w-full h-full object-cover group-hover:opacity-50" />
+              <img src={userData?.profileImg || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"} alt="User" className="w-full h-full object-cover group-hover:opacity-50" />
               <Camera className="absolute inset-0 m-auto text-white opacity-0 group-hover:opacity-100" size={24} />
             </div>
           </div>
           {/* نام اور ڈائنامک ویریفیکیشن بیج */}
           <h2 className="text-[#D4AF37] mt-4 text-2xl font-black italic flex items-center justify-center gap-1.5">
-            {userData?.name}
+            {userData?.name || "صارف"}
             <VerifiedBadge status={userData?.verificationStatus} />
           </h2>
           <p className="text-[#D4AF37]/60 text-[8px] uppercase font-bold tracking-widest">
@@ -110,12 +112,12 @@ const Sidebar = ({ isOpen, onClose, onAction, onEditProfile }) => {
            <p className="text-[8px] text-gray-400 font-bold uppercase">
              Version 2.0.4 • Azwaj Ecosystem
            </p>
-        </div>
+         </div>
       </div>
 
-      <LanguageSelectorModal 
-        isOpen={isLangModalOpen} 
-        onClose={() => setIsLangModalOpen(false)} 
+      <LanguageSelectorModal
+        isOpen={isLangModalOpen}
+        onClose={() => setIsLangModalOpen(false)}
       />
     </>
   );
