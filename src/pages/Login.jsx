@@ -3,7 +3,7 @@ import { Phone, Lock, ArrowRight, Shield, CheckCircle, Key } from 'lucide-react'
 import { AuthService } from '../services/AuthService';
 
 const Login = ({ onLoginSuccess }) => {
-  const [authMode, setAuthMode] = useState('phone_login'); // Modes: 'phone_login', 'signup_otp', 'verify_otp', 'set_profile'
+  const [authMode, setAuthMode] = useState('phone_login'); 
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countryCode, setCountryCode] = useState('+92');
   const [password, setPassword] = useState('');
@@ -26,6 +26,20 @@ const Login = ({ onLoginSuccess }) => {
   const getFullPhoneNumber = () => {
     let cleanPhone = phoneNumber.trim().replace(/^0+/, '');
     return `${countryCode}${cleanPhone}`;
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    setMessage('');
+    try {
+      const user = await AuthService.loginWithGoogle();
+      onLoginSuccess(user);
+    } catch (err) {
+      setError(err.message || 'گوگل لاگ ان ناکام رہا۔');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePhonePasswordLogin = async (e) => {
@@ -59,7 +73,6 @@ const Login = ({ onLoginSuccess }) => {
     try {
       const fullPhone = getFullPhoneNumber();
       
-      // سیکیورٹی چیک: کیا یہ نمبر پہلے سے موجود ہے؟
       const exists = await AuthService.checkIfPhoneExists(fullPhone);
       if (exists) {
         setError('یہ موبائل نمبر پہلے ہی رجسٹرڈ ہے۔ براہ کرم لاگ ان کریں۔');
@@ -126,7 +139,7 @@ const Login = ({ onLoginSuccess }) => {
       
       <div id="recaptcha-container" style={{ display: 'none' }}></div>
 
-      <div className="flex flex-col items-center text-center mb-8 z-10">
+      <div className="flex flex-col items-center text-center mb-6 z-10">
         <div className="bg-gradient-to-br from-[#D4AF37] to-[#AA8928] p-4 rounded-[28px] rotate-6 shadow-2xl mb-4 border border-white/20">
           <img src="/images/Logo.png" className="w-16 h-16 object-contain brightness-110" alt="Azwaj Logo" />
         </div>
@@ -152,6 +165,31 @@ const Login = ({ onLoginSuccess }) => {
         {message && (
           <div className="bg-green-500/20 border border-green-500/30 text-green-200 text-xs py-2 px-3 rounded-xl mb-4 text-right font-bold">
             ✓ {message}
+          </div>
+        )}
+
+        {/* گوگل ون ٹاپ لاگ ان بٹن (صرف مین لاگ ان یا سائن اپ موڈز میں دکھے گا) */}
+        {(authMode === 'phone_login' || authMode === 'signup_otp') && (
+          <div className="mb-5">
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              className="w-full bg-white hover:bg-gray-100 text-gray-800 font-bold text-sm py-3 px-4 rounded-2xl shadow-md flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-50"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path
+                  fill="#EA4335"
+                  d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.41 0-6.19-2.78-6.19-6.19s2.78-6.19 6.19-6.19c1.7 0 3.22.69 4.33 1.8l3.1-3.1C18.42 1.84 15.54 1 12.24 1 6.58 1 2 5.58 2 11.24s4.58 10.24 10.24 10.24c5.79 0 10.24-4.11 10.24-10.24 0-.64-.08-1.27-.2-1.95H12.24z"
+                />
+              </svg>
+              Google کے ساتھ لاگ ان کریں
+            </button>
+            <div className="flex items-center my-4">
+              <hr className="flex-1 border-white/10" />
+              <span className="px-3 text-xs text-white/40">یا</span>
+              <hr className="flex-1 border-white/10" />
+            </div>
           </div>
         )}
 
@@ -319,7 +357,7 @@ const Login = ({ onLoginSuccess }) => {
 
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-white/40 z-10 mt-8">
+      <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-white/40 z-10 mt-6">
         <Shield size={12} className="text-[#D4AF37]" />
         <span>محفوظ ترین، 100% تصدیق شدہ اور خاندانی ماحول</span>
       </div>
