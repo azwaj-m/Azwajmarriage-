@@ -15,21 +15,19 @@ const Login = ({ onLoginSuccess }) => {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  // ری کیپچا لوڈ کرنا (بغیر کسی کریش کے)
   useEffect(() => {
     try {
       AuthService.setupRecaptcha('recaptcha-container');
     } catch (err) {
-      console.error("Recaptcha initialization failed:", err);
+      console.error("Recaptcha failed:", err);
     }
   }, []);
 
   const getFullPhoneNumber = () => {
-    let cleanPhone = phoneNumber.trim().replace(/^0+/, ''); // شروع کے صفر ہٹائیں
+    let cleanPhone = phoneNumber.trim().replace(/^0+/, '');
     return `${countryCode}${cleanPhone}`;
   };
 
-  // ۱۔ موبائل نمبر اور پاس ورڈ سے لاگ ان
   const handlePhonePasswordLogin = async (e) => {
     e.preventDefault();
     if (!phoneNumber || !password) {
@@ -43,13 +41,12 @@ const Login = ({ onLoginSuccess }) => {
       const user = await AuthService.loginWithPhoneAndPassword(fullPhone, password);
       onLoginSuccess(user);
     } catch (err) {
-      setError(err.message || 'لاگ ان ناکام رہا۔ تفصیلات چیک کریں۔');
+      setError(err.message || 'لاگ ان ناکام رہا۔ دوبارہ کوشش کریں۔');
     } finally {
       setLoading(false);
     }
   };
 
-  // ۲۔ نیا اکاؤنٹ بنانے کے لیے OTP بھیجنا
   const handleSendOTP = async (e) => {
     e.preventDefault();
     if (!phoneNumber) {
@@ -64,13 +61,12 @@ const Login = ({ onLoginSuccess }) => {
       setMessage('تصدیقی کوڈ بھیج دیا گیا ہے۔');
       setAuthMode('verify_otp');
     } catch (err) {
-      setError(err.message || 'OTP کوڈ بھیجنے میں ناکامی۔ انٹرنیٹ چیک کریں۔');
+      setError(err.message || 'OTP کوڈ بھیجنے میں ناکامی۔');
     } finally {
       setLoading(false);
     }
   };
 
-  // ۳۔ OTP تصدیق کرنا
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     if (!otpCode) {
@@ -90,7 +86,6 @@ const Login = ({ onLoginSuccess }) => {
     }
   };
 
-  // ۴۔ نام اور پاس ورڈ سیٹ کر کے اکاؤنٹ مکمل کرنا
   const handleCompleteProfile = async (e) => {
     e.preventDefault();
     if (!fullName || !password) {
@@ -117,24 +112,24 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-[#3D0A0A] flex flex-col justify-between px-6 py-10 relative overflow-hidden" dir="rtl">
+    <div className="w-full min-h-screen bg-[#3D0A0A] flex flex-col justify-center items-center px-4 py-8 relative overflow-hidden" dir="rtl">
       
-      {/* فائر بیس ری کیپچا کے لیے ضروری پینل (جو پوشیدہ ہے لیکن DOM میں رینڈر ہوتا ہے) */}
+      {/* Invisible Recaptcha container */}
       <div id="recaptcha-container" style={{ display: 'none' }}></div>
 
-      {/* ۱۔ اوپری برانڈنگ ایریا */}
-      <div className="flex flex-col items-center text-center mt-4 z-10">
-        <div className="bg-gradient-to-br from-[#D4AF37] to-[#AA8928] p-3 rounded-3xl rotate-6 shadow-2xl mb-2 border border-white/25">
-          <img src="/images/Logo.png" className="w-14 h-14 object-contain brightness-110" alt="Azwaj Logo" />
+      {/* ۱۔ خوبصورت اور بڑا برانڈنگ لوگو */}
+      <div className="flex flex-col items-center text-center mb-8 z-10">
+        <div className="bg-gradient-to-br from-[#D4AF37] to-[#AA8928] p-4 rounded-[28px] rotate-6 shadow-2xl mb-4 border border-white/20">
+          <img src="/images/Logo.png" className="w-16 h-16 object-contain brightness-110" alt="Azwaj Logo" />
         </div>
-        <h1 className="text-3xl font-black text-[#D4AF37] tracking-tight uppercase leading-none">Azwaj</h1>
-        <p className="text-[9px] font-bold text-[#D4AF37]/80 tracking-[0.2em] uppercase mt-1">سنجیدہ رشتوں کا پلیٹ فارم</p>
+        <h1 className="text-4xl font-black text-[#D4AF37] tracking-tight uppercase leading-none">Azwaj</h1>
+        <p className="text-[10px] font-bold text-[#D4AF37]/80 tracking-[0.2em] uppercase mt-1">سنجیدہ رشتوں کا پلیٹ فارم</p>
       </div>
 
-      {/* ۲۔ مرکزی فارم کنٹرولر */}
-      <div className="w-full bg-white/5 backdrop-blur-md rounded-[35px] border border-white/10 p-6 shadow-2xl z-10 my-auto">
+      {/* ۲۔ فکسڈ اور مناسب سائز کا مرکزی فارم کارڈ */}
+      <div className="w-full max-w-[360px] bg-white/5 backdrop-blur-md rounded-[30px] border border-white/10 p-6 shadow-2xl z-10">
         
-        <h2 className="text-white text-lg font-black mb-4 text-right">
+        <h2 className="text-white text-base font-black mb-5 text-right">
           {authMode === 'phone_login' && 'موبائل نمبر سے لاگ ان کریں'}
           {authMode === 'signup_otp' && 'موبائل سے نیا اکاؤنٹ بنائیں'}
           {authMode === 'verify_otp' && 'کوڈ کی تصدیق کریں'}
@@ -153,14 +148,14 @@ const Login = ({ onLoginSuccess }) => {
           </div>
         )}
 
-        {/* فلو کنٹرول: موبائل نمبر + پاس ورڈ لاگ ان */}
+        {/* فارم ۱: موبائل نمبر اور پاس ورڈ لاگ ان */}
         {authMode === 'phone_login' && (
           <form onSubmit={handlePhonePasswordLogin} className="space-y-4">
             <div className="flex gap-2">
               <select 
                 value={countryCode} 
                 onChange={(e) => setCountryCode(e.target.value)}
-                className="bg-[#3D0A0A] border-2 border-white/10 rounded-2xl px-2 text-white text-xs font-bold outline-none focus:border-[#D4AF37]"
+                className="bg-[#3D0A0A] border border-white/10 rounded-2xl px-2.5 text-white text-sm font-bold outline-none focus:border-[#D4AF37]"
               >
                 <option value="+92">🇵🇰 +92</option>
                 <option value="+91">🇮🇳 +91</option>
@@ -174,10 +169,10 @@ const Login = ({ onLoginSuccess }) => {
                   placeholder="موبائل نمبر"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="w-full bg-[#F5E6D3]/10 border-2 border-white/10 rounded-2xl py-3.5 pr-11 pl-4 text-white text-xs font-bold outline-none focus:border-[#D4AF37] text-right"
+                  className="w-full bg-[#F5E6D3]/10 border border-white/10 rounded-2xl py-3 pr-10 pl-4 text-white text-sm font-semibold outline-none focus:border-[#D4AF37] text-right"
                   required
                 />
-                <Phone size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
+                <Phone size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
               </div>
             </div>
 
@@ -187,22 +182,22 @@ const Login = ({ onLoginSuccess }) => {
                 placeholder="پاس ورڈ"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#F5E6D3]/10 border-2 border-white/10 rounded-2xl py-3.5 pr-11 pl-4 text-white text-xs font-bold outline-none focus:border-[#D4AF37] text-right"
+                className="w-full bg-[#F5E6D3]/10 border border-white/10 rounded-2xl py-3 pr-10 pl-4 text-white text-sm font-semibold outline-none focus:border-[#D4AF37] text-right"
                 required
               />
-              <Lock size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
+              <Lock size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA8928] text-[#3D0A0A] font-black text-xs py-3.5 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA8928] text-[#3D0A0A] font-black text-sm py-3 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               {loading ? 'پلیز ویٹ...' : 'لاگ ان کریں'}
               <ArrowRight size={14} className="rotate-180" />
             </button>
 
-            <p className="text-center text-white/50 text-[10px] mt-2">
+            <p className="text-center text-white/50 text-xs mt-3">
               اکاؤنٹ نہیں ہے؟{' '}
               <button type="button" onClick={() => setAuthMode('signup_otp')} className="text-[#D4AF37] font-black underline">
                 نیا اکاؤنٹ بنائیں
@@ -211,14 +206,14 @@ const Login = ({ onLoginSuccess }) => {
           </form>
         )}
 
-        {/* فلو کنٹرول: نیا سائن اپ (بذریعہ OTP حاصل کریں) */}
+        {/* فارم ۲: بذریعہ ایس ایم ایس او ٹی پی سائن اپ */}
         {authMode === 'signup_otp' && (
           <form onSubmit={handleSendOTP} className="space-y-4">
             <div className="flex gap-2">
               <select 
                 value={countryCode} 
                 onChange={(e) => setCountryCode(e.target.value)}
-                className="bg-[#3D0A0A] border-2 border-white/10 rounded-2xl px-2 text-white text-xs font-bold outline-none focus:border-[#D4AF37]"
+                className="bg-[#3D0A0A] border border-white/10 rounded-2xl px-2.5 text-white text-sm font-bold outline-none focus:border-[#D4AF37]"
               >
                 <option value="+92">🇵🇰 +92</option>
                 <option value="+91">🇮🇳 +91</option>
@@ -232,32 +227,32 @@ const Login = ({ onLoginSuccess }) => {
                   placeholder="موبائل نمبر درج کریں"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="w-full bg-[#F5E6D3]/10 border-2 border-white/10 rounded-2xl py-3.5 pr-11 pl-4 text-white text-xs font-bold outline-none focus:border-[#D4AF37] text-right"
+                  className="w-full bg-[#F5E6D3]/10 border border-white/10 rounded-2xl py-3 pr-10 pl-4 text-white text-sm font-semibold outline-none focus:border-[#D4AF37] text-right"
                   required
                 />
-                <Phone size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
+                <Phone size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
               </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA8928] text-[#3D0A0A] font-black text-xs py-3.5 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA8928] text-[#3D0A0A] font-black text-sm py-3 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               {loading ? 'کوڈ بھیجا جا رہا ہے...' : 'بذریعہ SMS کوڈ حاصل کریں'}
               <ArrowRight size={14} className="rotate-180" />
             </button>
 
-            <p className="text-center text-white/50 text-[10px] mt-2">
+            <p className="text-center text-white/50 text-xs mt-3">
               پہلے سے اکاؤنٹ ہے؟{' '}
               <button type="button" onClick={() => setAuthMode('phone_login')} className="text-[#D4AF37] font-black underline">
-                یہاں لاگ ان کریں
+                لاگ ان کریں
               </button>
             </p>
           </form>
         )}
 
-        {/* فلو کنٹرول: موصول شدہ OTP کوڈ کی ویریفیکیشن */}
+        {/* فارم ۳: او ٹی پی کی تصدیق */}
         {authMode === 'verify_otp' && (
           <form onSubmit={handleVerifyOTP} className="space-y-4">
             <div className="relative">
@@ -266,23 +261,23 @@ const Login = ({ onLoginSuccess }) => {
                 placeholder="6 ہندسوں کا کوڈ درج کریں"
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value)}
-                className="w-full bg-[#F5E6D3]/10 border-2 border-white/10 rounded-2xl py-3.5 pr-11 pl-4 text-white text-xs font-bold outline-none focus:border-[#D4AF37] text-center tracking-[0.5em]"
+                className="w-full bg-[#F5E6D3]/10 border border-white/10 rounded-2xl py-3 pr-10 pl-4 text-white text-sm font-bold outline-none focus:border-[#D4AF37] text-center tracking-[0.4em]"
                 required
               />
-              <Key size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
+              <Key size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA8928] text-[#3D0A0A] font-black text-xs py-3.5 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA8928] text-[#3D0A0A] font-black text-sm py-3 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               {loading ? 'تصدیق کی جا رہی ہے...' : 'کوڈ کی تصدیق کریں'}
             </button>
           </form>
         )}
 
-        {/* فلو کنٹرول: نام اور پاس ورڈ سیٹ کرنا */}
+        {/* فارم ۴: نام اور پاس ورڈ سیٹ کرنا */}
         {authMode === 'set_profile' && (
           <form onSubmit={handleCompleteProfile} className="space-y-4">
             <div className="relative">
@@ -291,10 +286,10 @@ const Login = ({ onLoginSuccess }) => {
                 placeholder="اپنا پورا نام"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-[#F5E6D3]/10 border-2 border-white/10 rounded-2xl py-3.5 pr-11 pl-4 text-white text-xs font-bold outline-none focus:border-[#D4AF37] text-right"
+                className="w-full bg-[#F5E6D3]/10 border border-white/10 rounded-2xl py-3 pr-10 pl-4 text-white text-sm font-semibold outline-none focus:border-[#D4AF37] text-right"
                 required
               />
-              <CheckCircle size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
+              <CheckCircle size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
             </div>
 
             <div className="relative">
@@ -303,16 +298,16 @@ const Login = ({ onLoginSuccess }) => {
                 placeholder="اپنا نیا لاگ ان پاس ورڈ بنائیں"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#F5E6D3]/10 border-2 border-white/10 rounded-2xl py-3.5 pr-11 pl-4 text-white text-xs font-bold outline-none focus:border-[#D4AF37] text-right"
+                className="w-full bg-[#F5E6D3]/10 border border-white/10 rounded-2xl py-3 pr-10 pl-4 text-white text-sm font-semibold outline-none focus:border-[#D4AF37] text-right"
                 required
               />
-              <Lock size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
+              <Lock size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA8928] text-[#3D0A0A] font-black text-xs py-3.5 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA8928] text-[#3D0A0A] font-black text-sm py-3 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               {loading ? 'پروفائل بنائی جا رہی ہے...' : 'اکاؤنٹ مکمل کریں'}
             </button>
@@ -321,9 +316,9 @@ const Login = ({ onLoginSuccess }) => {
 
       </div>
 
-      {/* ۳۔ نچلی کسٹمر سپورٹ / سیفٹی پٹی */}
-      <div className="flex items-center justify-center gap-1.5 text-[9px] font-bold text-white/40 z-10 mt-4">
-        <Shield size={11} className="text-[#D4AF37]" />
+      {/* ۳۔ خوبصورت نچلی سیفٹی پٹی */}
+      <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-white/40 z-10 mt-8">
+        <Shield size={12} className="text-[#D4AF37]" />
         <span>محفوظ ترین، 100% تصدیق شدہ اور خاندانی ماحول</span>
       </div>
     </div>
