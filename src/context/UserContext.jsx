@@ -1,75 +1,74 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../utils/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc, setDoc } from 'firebase/firestore';
 
-const UserContext = createContext();
+const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState({
-    fullName: "مہمان صارف",
-    profileImg: "https://via.placeholder.com/150",
-    isVerified: false
-  });
+  const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // اگر فائر بیس کنکشن میں مسئلہ ہو تو 5 سیکنڈ بعد لوڈنگ زبردستی ختم کر دیں
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.warn("Firebase took too long, bypassing loading...");
-        setLoading(false);
-      }
-    }, 5000);
+    console.log("--- UserContext Listening to Auth State ---");
+    
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      try {
+        if (user) {
+          console.log("Firebase Auth detected user:", user.uid);
+          const userDocRef = doc(db, 'users', user.uid);
+          
+          // ریئل ٹائم ڈیٹا سننے کے لیے لسٹنر لگائیں
+          const unsubSnapshot = onSnapshot(userDocRef, async (docSnap) => {
+            if (docSnap.exists()) {
+              setUserData(docSnap.data());
+            } else {
+              // اگر فائر سٹور میں ڈاکومنٹ نہیں ہے تو عارضی طور پر بنائیں تاکہ کریش نہ ہو
+              const defaultData = {
+                uid: user.uid,
+                email: user.email || '',
+                displayName: user.displayName || user.email?.split('@')[0] || 'User',
+                photoURL: user.photoURL || 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100',
+                verificationStatus: 'unverified',
+                createdAt: new Date().toISOString()
+              };
+              
+              await setDoc(userDocRef, defaultData);
+              setUserData(defaultData);
+            }
+            setLoading(false);
+          }, (err) => {
+            console.error("Firestore Snapshot Error:", err);
+            setLoading(false);
+          });
 
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      clearTimeout(timeout);
-      setUser(currentUser);
-      
-      if (currentUser) {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        const unsubscribeDoc = onSnapshot(userDocRef, (snapshot) => {
-          if (snapshot.exists()) {
-            setUserData(snapshot.data());
-          }
+          return () => unsubSnapshot();
+        } else {
+          console.log("No authenticated user found in Firebase.");
+          setUserData(null);
           setLoading(false);
-        }, (error) => {
-          console.error("Firestore Error:", error);
-          setLoading(false);
-        });
-        return () => unsubscribeDoc();
-      } else {
-        setUserData(null);
+        }
+      } catch (error) {
+        console.error("UserContext Init Error:", error);
         setLoading(false);
       }
-    }, (error) => {
-      console.error("Auth Error:", error);
-      setLoading(false);
     });
 
-    return () => {
-      unsubscribeAuth();
-      clearTimeout(timeout);
-    };
+    return () => unsubscribe();
   }, []);
 
-  const updateProfile = async (updates) => {
-    if (!user) return { success: false, error: "لاگ ان ضروری ہے" };
-    try {
-      const userDocRef = doc(db, "users", user.uid);
-      await updateDoc(userDocRef, updates);
-      return { success: true };
-    } catch (error) {
-      return { success: false, error };
-    }
-  };
-
   return (
-    <UserContext.Provider value={{ user, userData, loading, updateProfile }}>
+    <UserContext.Provider value={{ userData, setUserData, loading }}>
       {children}
     </UserContext.Provider>
   );
 };
 
-export const useUser = () => useContext(UserContext);
+export const useUser = () => {
+  const context = useContext(UserContext);
+  // سیکیورٹی گارڈ: اگر پرووائیڈر لوڈ نہ ہو تو ایپ پھٹے نہیں
+  if (context === undefined) {
+    return { userData: null, loading: false };
+  }
+  return context;
+};

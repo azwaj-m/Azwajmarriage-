@@ -35,7 +35,6 @@ const AppContent = () => {
 
   const { searchQuery, setSearchQuery, filteredResults } = useSearch();
 
-  // ۱۔ ایپ لوڈ ہوتے ہی ڈیوائس پر لاگ ان سیشن چیک کریں
   useEffect(() => {
     const activeSession = AuthService.checkSessionValidity();
     if (activeSession) {
@@ -44,7 +43,6 @@ const AppContent = () => {
     }
   }, []);
 
-  // کامیاب لاگ ان کا ہینڈلر
   const handleLoginSuccess = (user) => {
     setIsAuthenticated(true);
     setCurrentUser(user);
@@ -52,7 +50,6 @@ const AppContent = () => {
     setCurrentView('main');
   };
 
-  // لاگ آؤٹ ہینڈلر
   const handleLogout = async () => {
     await AuthService.logout();
     setIsAuthenticated(false);
@@ -74,37 +71,28 @@ const AppContent = () => {
     }
   }, [userContext]);
 
-  // سفید اسکرین سے بچنے کا مضبوط ڈیفنس گارڈ
   if (!userContext) {
     return (
-      <div className="p-10 text-red-600 bg-red-100 h-screen flex flex-col justify-center items-center text-center">
-        <h1 className="font-black text-xl mb-2">معذرت، سسٹم لوڈ نہیں ہو سکا!</h1>
-        <p className="text-xs">UserContext فراہم نہیں کیا گیا۔ چیک کریں کہ کیا main.jsx میں UserProvider موجود ہے؟</p>
+      <div className="p-10 text-red-600 bg-red-100 h-screen flex flex-col justify-center items-center">
+        <h1 className="font-bold">سسٹم لوڈ نہیں ہو سکا!</h1>
+        <p>UserContext فراہم نہیں کیا گیا۔</p>
       </div>
     );
   }
 
   const { loading, userData } = userContext;
 
-  // اگر صارف لاگ ان نہیں ہے، تو اسے صرف لاگ ان پیج دکھائیں
   if (!isAuthenticated) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // تصدیق کا قانون لاگو کرنے کا مرکزی فنکشن (سیکیورٹی چیک)
   const requireVerification = (actionCallback) => {
-    // اگر ڈیٹا ابھی لوڈ ہو رہا ہو تو الرٹ دیں
-    if (loading) {
-      alert("صارف کا ڈیٹا لوڈ ہو رہا ہے، براہ کرم ایک سیکنڈ انتظار کریں...");
-      return;
-    }
-    
-    // سیکیورٹی فال بیک: اگر userData کسی وجہ سے نل ہو تو اسے غیر تصدیق شدہ مانیں
+    if (loading) return;
     const status = userData?.verificationStatus || 'unverified';
     if (status === 'verified') {
       actionCallback();
     } else {
-      alert("رابطہ قائم کرنے یا تفصیلات دیکھنے سے پہلے شناختی تصدیق (CNIC/Selfie) لازمی ہے تاکہ فیک یوزرز کو روکا جا سکے۔");
+      alert("رابطہ قائم کرنے یا تفصیلات دیکھنے سے پہلے شناختی تصدیق (CNIC/Selfie) لازمی ہے۔");
       setCurrentView('verification');
     }
   };
@@ -129,7 +117,7 @@ const AppContent = () => {
           case 'discover':
             return (
               <Discover
-                profiles={filteredResults}
+                profiles={filteredResults || []}
                 setSelectedProfile={(profile) => {
                   requireVerification(() => setSelectedProfile(profile));
                 }}
@@ -159,7 +147,6 @@ const AppContent = () => {
         }
       }
 
-      // سائیڈ بار ویوز کا کنٹرول
       if (currentView === 'blocked') return <BlockedProfiles onBack={() => setCurrentView('main')} />;
       if (currentView === 'premium') return <Subscription />;
       if (currentView === 'help') return <HelpSupport onBack={() => setCurrentView('main')} />;
@@ -171,19 +158,17 @@ const AppContent = () => {
     return null;
   };
 
-  // لوڈنگ انڈیکیٹر (اب یہ سفید سکرین کو روکنے میں مددگار ہے)
   if (loading) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-white">
         <div className="w-10 h-10 border-4 border-t-blue-500 rounded-full animate-spin"></div>
-        <p className="mt-4 font-bold text-gray-700">پروفائل ڈیٹا لوڈ ہو رہا ہے...</p>
+        <p className="mt-4 font-bold text-gray-700">ڈیٹا لوڈ ہو رہا ہے...</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-md mx-auto h-screen bg-[#FDF5F5] flex flex-col overflow-hidden relative shadow-2xl">
-
       {activeNotification && (
         <NotificationToast
           notification={activeNotification}
