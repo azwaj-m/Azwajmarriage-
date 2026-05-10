@@ -4,24 +4,20 @@ import {
   RecaptchaVerifier,
   signOut,
   GoogleAuthProvider,
-  signInWithPopup,
-  onAuthStateChanged
+  signInWithPopup
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 export const AuthService = {
   googleProvider: new GoogleAuthProvider(),
 
-  // ۱۔ گوگل پرووائیڈر لاگ ان (محفوظ فلو)
   loginWithGoogle: async () => {
     try {
       const result = await signInWithPopup(auth, AuthService.googleProvider);
       const user = result.user;
       const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
-      // فون نمبر فارمیٹ کو صاف کریں اگر موجود ہو، ورنہ ای میل آئی ڈی استعمال کریں
-      const docId = user.phoneNumber ? user.phoneNumber.replace('+', '') : user.uid;
-      const userDocRef = doc(db, "users", docId);
+      const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
       let userData = {
@@ -31,134 +27,158 @@ export const AuthService = {
         phoneNumber: user.phoneNumber || "",
         photoURL: user.photoURL || defaultAvatar,
         verificationStatus: 'verified',
-        updatedAt: serverTimestamp()
+        createdAt: new Date().toISOString()
       };
 
       if (!userDoc.exists()) {
-        userData.createdAt = serverTimestamp();
         await setDoc(userDocRef, userData);
       } else {
-        userData = { ...userDoc.data(), uid: user.uid };
+        userData = userDoc.data();
+        if (!userData.photoURL) {
+          userData.photoURL = defaultAvatar;
+        }
       }
+
+      localStorage.setItem('user_session', JSON.stringify({ 
+        uid: userData.uid, 
+        phoneNumber: userData.phoneNumber, 
+        displayName: userData.displayName,
+        photoURL: userData.photoURL
+      }));
 
       return userData;
     } catch (error) {
       console.error("Google Auth Error:", error);
-      throw new Error("گوگل لاگ ان کی تصدیق ناکام رہی۔");
+      throw new Error("گوگل لاگ ان کے دوران خرابی پیش آئی۔");
     }
   },
 
-  // ۲۔ ری کیپچا لائف سائیکل مینیجر (میموری لیک اور اسٹیل ریفرنس بچاؤ)
   setupRecaptcha: (containerId) => {
-    try {
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
-      }
-      
+    if (!window.recaptchaVerifier) {
       const container = document.getElementById(containerId);
       if (!container) return;
 
       window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
         size: 'invisible',
-        callback: () => { console.log("reCAPTCHA solved successfully."); }
+        callback: (response) => {
+          console.log("Recaptcha resolved");
+        }
       });
-    } catch (error) {
-      console.error("reCAPTCHA Setup Error:", error);
     }
   },
 
-  // ۳۔ او ٹی پی بھیجنا (بلنگ بچانے کے لیے $O(1)$ تصدیق کے ساتھ)
+  checkIfPhoneExists: async (phoneNumber) => {
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("phoneNumber", "==", phoneNumber));
+      const querySnapshot = await getDocs(q);
+      return !querySnapshot.empty;
+    } catch (error) {
+      return false;
+    }
+  },
+
   sendOTP: async (phoneNumber) => {
     try {
-      const docId = phoneNumber.replace('+', '');
-      const userDocRef = doc(db, "users", docId);
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists()) {
-        throw new Error("یہ نمبر پہلے ہی رجسٹرڈ ہے۔ براہ کرم لاگ ان کریں۔");
-      }
-
       const appVerifier = window.recaptchaVerifier;
-      if (!appVerifier) {
-        throw new Error("سیکیورٹی تصدیق کا عمل مکمل نہیں ہو سکا۔ پیج ریفریش کریں۔");
-      }
-
-      window.confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+      if (!appVerifier) throw new Error("سیکیورٹی ویریفکیشن فعال نہیں ہو سکی۔");
+      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+      window.confirmationResult = confirmationResult;
       return true;
     } catch (error) {
-      console.error("OTP Error:", error);
-      throw new Error(error.message || "تصدیقی کوڈ بھیجنے میں خرابی پیش آئی۔");
+      throw new Error(error.message || "او ٹی پی بھیجنے میں دشواری پیش آئی۔");
     }
   },
 
-  // ۴۔ او ٹی پی کوڈ کی تصدیق
   verifyOTP: async (otpCode) => {
     try {
       const confirmationResult = window.confirmationResult;
-      if (!confirmationResult) throw new Error("تصدیقی سیشن ختم ہو چکا ہے۔");
+      if (!confirmationResult) throw new Error("او ٹی پی کا سیشن ختم ہو چکا ہے۔");
       const result = await confirmationResult.confirm(otpCode);
       return result.user;
     } catch (error) {
-      throw new Error("درج کردہ تصدیقی کوڈ درست نہیں ہے۔");
+      throw new Error("درج کردہ تصدیقی کوڈ غلط ہے۔");
     }
   },
 
-  // ۵۔ پروفائل کو کلاؤڈ ٹائم اسٹیمپ کے ساتھ محفوظ کرنا ($O(1)$ انڈیکسنگ)
-  saveUserToFirestore: async (user, displayName) => {
+  saveUserToFirestore: async (user, additionalData = {}) => {
     try {
-      if (!user) throw new Error("صارف سیشن غائب ہے۔");
-      const docId = user.phoneNumber.replace('+', '');
-      const userDocRef = doc(db, "users", docId);
+      if (!user) throw new Error("صارف دستیاب نہیں ہے۔");
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
       const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
-      const userData = {
+      let userData = {
         uid: user.uid,
         phoneNumber: user.phoneNumber,
-        displayName: displayName || "صارف",
         photoURL: defaultAvatar,
         verificationStatus: 'verified',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        createdAt: new Date().toISOString(),
+        ...additionalData
       };
 
-      await setDoc(userDocRef, userData);
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, userData);
+      } else {
+        await setDoc(userDocRef, { ...userDoc.data(), ...additionalData }, { merge: true });
+        userData = { ...userDoc.data(), ...additionalData };
+      }
+
+      localStorage.setItem('user_session', JSON.stringify({ 
+        uid: user.uid, 
+        phoneNumber: user.phoneNumber, 
+        displayName: userData.displayName,
+        photoURL: userData.photoURL
+      }));
       return userData;
     } catch (error) {
-      console.error("Firestore Save Error:", error);
-      throw new Error("پروفائل ڈیٹا بیس میں محفوظ نہیں کی جا سکی۔");
+      throw new Error("ڈیٹا بیس میں ریکارڈ محفوظ نہیں ہو سکا۔");
     }
   },
 
-  // ۶۔ ریل ٹائم اوتھ اسٹیٹ مانیٹرنگ (سورس آف ٹروتھ گارڈ 🛡️)
-  monitorAuthState: (onUserChange) => {
-    return onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const docId = firebaseUser.phoneNumber 
-          ? firebaseUser.phoneNumber.replace('+', '') 
-          : firebaseUser.uid;
-          
-        const userDocRef = doc(db, "users", docId);
-        const userDoc = await getDoc(userDocRef);
+  loginWithPhoneAndPassword: async (phoneNumber, password) => {
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("phoneNumber", "==", phoneNumber));
+      const querySnapshot = await getDocs(q);
 
-        if (userDoc.exists()) {
-          onUserChange({ ...userDoc.data(), uid: firebaseUser.uid });
-        } else {
-          onUserChange(firebaseUser);
-        }
-      } else {
-        onUserChange(null);
+      if (querySnapshot.empty) {
+        throw new Error("اس نمبر سے کوئی اکاؤنٹ رجسٹرڈ نہیں ملا۔");
       }
-    });
+
+      let foundUser = null;
+      querySnapshot.forEach((doc) => {
+        foundUser = doc.data();
+      });
+
+      if (foundUser && foundUser.customPassword === password) {
+        const sessionUser = { 
+          uid: foundUser.uid, 
+          phoneNumber: foundUser.phoneNumber, 
+          displayName: foundUser.displayName,
+          photoURL: foundUser.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+        };
+        localStorage.setItem('user_session', JSON.stringify(sessionUser));
+        return foundUser;
+      } else {
+        throw new Error("درج کردہ پاس ورڈ غلط ہے۔");
+      }
+    } catch (error) {
+      throw new Error(error.message || "لاگ ان کے دوران خرابی پیش آئی۔");
+    }
   },
 
-  // ۷۔ لاگ آؤٹ
+  checkSessionValidity: () => {
+    const session = localStorage.getItem('user_session');
+    return session ? JSON.parse(session) : null;
+  },
+
   logout: async () => {
     try {
       await signOut(auth);
       localStorage.removeItem('user_session');
     } catch (error) {
-      console.error("SignOut Error:", error);
+      console.error(error);
     }
   }
 };

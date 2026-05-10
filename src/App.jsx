@@ -8,21 +8,28 @@ function App() {
   const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    // ریل ٹائم فائر بیس لائف سائیکل سبسکرپشن (نہایت محفوظ)
-    const unsubscribe = AuthService.monitorAuthState((user) => {
-      setCurrentUser(user);
-      if (initializing) setInitializing(false);
-    });
+    // 72 گھنٹے پرانا کلاسک لوکل سیشن چیک فلو
+    const savedSession = AuthService.checkSessionValidity();
+    if (savedSession) {
+      setCurrentUser(savedSession);
+    }
+    setInitializing(false);
+  }, []);
 
-    // ان سبسکرائب کلین اپ توسیعی لائف سائیکل
-    return () => unsubscribe();
-  }, [initializing]);
+  const handleLoginSuccess = (userData) => {
+    setCurrentUser(userData);
+  };
+
+  const handleLogout = async () => {
+    await AuthService.logout();
+    setCurrentUser(null);
+  };
 
   if (initializing) {
     return (
       <div className="w-full min-h-screen bg-[#3D0A0A] flex flex-col justify-center items-center" dir="rtl">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#D4AF37] mb-4"></div>
-        <p className="text-white/70 text-sm font-bold">لوڈ ہو رہا ہے، براہ کرم انتظار کریں...</p>
+        <p className="text-white/70 text-sm font-bold">لوڈ ہو رہا ہے...</p>
       </div>
     );
   }
@@ -30,9 +37,9 @@ function App() {
   return (
     <div className="min-h-screen bg-[#3D0A0A]">
       {currentUser ? (
-        <Home user={currentUser} onLogout={AuthService.logout} />
+        <Home user={currentUser} onLogout={handleLogout} />
       ) : (
-        <Login onLoginSuccess={(user) => setCurrentUser(user)} />
+        <Login onLoginSuccess={handleLoginSuccess} />
       )}
     </div>
   );
