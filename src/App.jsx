@@ -1,46 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
-import Home from './pages/Home';
-import { AuthService } from './services/AuthService';
+import Home from './pages/Home'; // آپ کا رائل مرون اور گولڈن ہوم پیج
+import { useUser } from './context/UserContext';
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [initializing, setInitializing] = useState(true);
+  const { i18n } = useTranslation();
+  const { userData, loading } = useUser();
+
+  // i18n.dir() کے کریش سے بچنے کے لیے محفوظ متبادل طریقہ
+  const currentLanguage = i18n?.language || 'ur';
+  const direction = (currentLanguage === 'ur' || currentLanguage === 'ar') ? 'rtl' : 'ltr';
 
   useEffect(() => {
-    // 72 گھنٹے پرانا کلاسک لوکل سیشن چیک فلو
-    const savedSession = AuthService.checkSessionValidity();
-    if (savedSession) {
-      setCurrentUser(savedSession);
-    }
-    setInitializing(false);
-  }, []);
+    // پورے پیج کی ڈائریکشن کو خودکار طریقے سے سیٹ کریں
+    document.documentElement.dir = direction;
+    document.documentElement.lang = currentLanguage;
+  }, [currentLanguage, direction]);
 
-  const handleLoginSuccess = (userData) => {
-    setCurrentUser(userData);
-  };
-
-  const handleLogout = async () => {
-    await AuthService.logout();
-    setCurrentUser(null);
-  };
-
-  if (initializing) {
+  if (loading) {
     return (
-      <div className="w-full min-h-screen bg-[#3D0A0A] flex flex-col justify-center items-center" dir="rtl">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#D4AF37] mb-4"></div>
-        <p className="text-white/70 text-sm font-bold">لوڈ ہو رہا ہے...</p>
+      <div className="min-h-screen flex items-center justify-center bg-rose-50">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-rose-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#3D0A0A]">
-      {currentUser ? (
-        <Home user={currentUser} onLogout={handleLogout} />
-      ) : (
-        <Login onLoginSuccess={handleLoginSuccess} />
-      )}
+    <div className="min-h-screen bg-gray-50 text-right" style={{ direction: direction }}>
+      <Router>
+        <Routes>
+          <Route path="/login" element={!userData ? <Login /> : <Navigate to="/" />} />
+          <Route path="/" element={userData ? <Home /> : <Navigate to="/login" />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Router>
     </div>
   );
 }

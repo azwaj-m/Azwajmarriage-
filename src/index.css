@@ -54,3 +54,17 @@ header input {
 nav button {
   transform: scale(0.85);
 }
+
+/* مڑے ہوئے گولڈن آرک کے لیے پاتھ شیپ */
+.clip-path-curve {
+  clip-path: ellipse(80% 55% at 50% 15%);
+}
+
+/* اسکرول بار غائب کرنے کے لیے */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -1,14 +1,12 @@
 import React from 'react';
+import { ShieldCheck } from 'lucide-react';
 
-const VerifiedBadge = ({ status }) => {
-  if (status !== 'verified') return null;
-
+const VerifiedBadge = () => {
   return (
-    <span className="inline-flex items-center justify-center w-4 h-4 mr-1 text-white bg-blue-500 rounded-full" title="تصدیق شدہ یوزر">
-      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-      </svg>
-    </span>
+    <div className="inline-flex items-center gap-0.5 bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full text-[10px] font-bold border border-blue-100">
+      <span>تصدیق شدہ</span>
+      <ShieldCheck className="w-3.5 h-3.5 text-blue-500 fill-blue-500/10" />
+    </div>
   );
 };
 
