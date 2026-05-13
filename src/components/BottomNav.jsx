@@ -92,3 +92,4 @@ const BottomNav = ({ activeTab, setActiveTab }) => {
 };
 
 export default BottomNav;
+

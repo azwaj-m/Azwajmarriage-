@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean": "rm -rf dist detector.log node_modules/.vite"
   },
   "dependencies": {
     "@vitalets/google-translate-api": "^9.2.1",

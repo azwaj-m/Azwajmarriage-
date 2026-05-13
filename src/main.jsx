@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "./services/i18n.js"; // اب پاتھ بالکل درست ہے
+import "./services/i18n.js"; 
 import App from "./App.jsx";
 import "./index.css";
 import ErrorBoundary from "./components/ErrorBoundary";
