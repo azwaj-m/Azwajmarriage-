@@ -1,58 +1,95 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearch } from '../context/SearchContext';
+import { useUser } from '../context/UserContext';
 import { Bell, Menu, Search, Filter } from 'lucide-react';
 
-const Header = ({ toggleSidebar, onNotificationClick }) => {
+const Header = ({ searchQuery, setSearchQuery, toggleSidebar, onNotificationClick }) => {
   const { t } = useTranslation();
-  
-  // سرچ کی اسٹیٹ اب یہاں گلوبل سرچ انجن سے براہ راست کنیکٹڈ ہے
-  const { searchQuery, setSearchQuery } = useSearch();
+  const { userData } = useUser();
+
+  // لاگ ان صارف کی تصویر کا لائیو فال بیک
+  const user = userData || {};
+  const userPhoto = user.photoURL || user.img || 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100';
 
   return (
-    <header className="bg-[#3D0A0A] pt-4 pb-6 px-4 rounded-b-[45px] shadow-2xl relative z-50 border-b-2 border-[#D4AF37]/30" dir={t('dir')}>
-      {/* اوپری پٹی: پروفائل پکچر، لوگو/نام، اور نوٹیفکیشن بیل */}
-      <div className="flex justify-between items-center mb-6">
-        {/* یوزر اوتار جس پر کلک کرنے سے سائیڈ بار کھلتا ہے */}
-        <div className="w-10 h-10 rounded-full border-2 border-[#D4AF37] overflow-hidden bg-white cursor-pointer active:scale-95 transition-transform" onClick={toggleSidebar}>
-          <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100" className="w-full h-full object-cover" alt="User" />
+    <header className="bg-[#3D0A0A] pt-4 pb-6 px-4 rounded-b-[45px] shadow-2xl relative z-50 border-b-2 border-[#D4AF37]/30" dir="rtl">
+      
+      {/* 👑 ٹاپ رو: پروفائل، برانڈ نام اور بیل آئیکن */}
+      <div className="flex justify-between items-center mb-5">
+        
+        {/* بائیں طرف: لائیو یوزر اوتار (ایکٹو کلک کے ساتھ) */}
+        <div 
+          className="w-10 h-10 rounded-full border-2 border-[#D4AF37] overflow-hidden bg-white/10 cursor-pointer active:scale-95 transition shadow-md"
+          onClick={toggleSidebar}
+        >
+          <img 
+            src={userPhoto} 
+            className="w-full h-full object-cover" 
+            alt="User Account" 
+            onError={(e) => {
+              e.target.src = 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100';
+            }}
+          />
         </div>
-
-        {/* برانڈ لوگو اور نام کا خوبصورت کارڈ */}
+        
+        {/* درمیان میں: برانڈ نام اور پریمیم جیومیٹرک لوگو ہولڈر */}
         <div className="flex items-center gap-3">
-          <div className="text-left leading-tight">
-            <h1 className="text-2xl font-black text-[#D4AF37] tracking-tighter uppercase leading-none">Azwaj</h1>
-            <p className="text-[9px] font-bold text-[#D4AF37]/80 tracking-[0.3em] uppercase text-right">{t('marriage')}</p>
+          <div className="text-right leading-none flex flex-col justify-center">
+            <h1 className="text-2xl font-black text-[#D4AF37] tracking-tighter uppercase mb-0.5">
+              Azwaj
+            </h1>
+            <p className="text-[9px] font-black text-[#D4AF37]/80 tracking-[0.25em] uppercase text-right">
+              {t('marriage', 'MARRIAGE')}
+            </p>
           </div>
-          <div className="bg-gradient-to-br from-[#D4AF37] to-[#AA8928] p-1.5 rounded-xl rotate-3 shadow-lg">
-            <img src="/images/Logo.png" className="w-7 h-7 object-contain brightness-110" alt="Logo" />
+          
+          {/* ۹۰ ڈگری زاویہ برانڈ پریمیم لوگو باکس */}
+          <div className="bg-gradient-to-br from-[#D4AF37] to-[#AA8928] p-1.5 rounded-xl rotate-3 shadow-lg border border-white/10">
+            <img 
+              src="/images/Logo.png" 
+              className="w-7 h-7 object-contain brightness-110" 
+              alt="Azwaj Logo" 
+            />
           </div>
         </div>
-
-        {/* نوٹیفکیشن کا بٹن */}
-        <button onClick={onNotificationClick} className="bg-[#D4AF37] p-2 rounded-full shadow-xl relative active:scale-90 transition-transform">
+        
+        {/* دائیں طرف: نوٹیفکیشن ایکشن گھنٹی */}
+        <button 
+          onClick={onNotificationClick} 
+          className="bg-[#D4AF37] p-2 rounded-full shadow-xl relative active:scale-90 transition border border-white/20 text-[#3D0A0A]"
+        >
           <Bell size={18} fill="#3D0A0A" stroke="none" />
+          {/* ایکٹو ریڈ ڈاٹ انڈیکیٹر */}
+          <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-600 rounded-full border border-white"></span>
         </button>
       </div>
 
-      {/* نچلی پٹی: مینو ہیمبرگر بٹن اور جدید ترین ان پٹ فیلڈ */}
+      {/* 🔍 باٹم رو: مینو بٹن اور پریمیم راؤنڈڈ ان پٹ سرچ بار */}
       <div className="flex gap-2 items-center">
-        <button onClick={toggleSidebar} className="bg-[#D4AF37] p-2.5 rounded-2xl shadow-lg text-[#3D0A0A] active:scale-90 transition-transform">
+        {/* مینو ٹوگل بٹن */}
+        <button 
+          onClick={toggleSidebar} 
+          className="bg-[#D4AF37] p-2.5 rounded-2xl shadow-lg text-[#3D0A0A] active:scale-95 transition border border-white/10"
+        >
           <Menu size={20} />
         </button>
         
+        {/* ان پٹ کنٹینر */}
         <div className="relative flex-1 group">
           <input 
             type="text" 
-            placeholder={t('search_placeholder', 'Search country, name, job...')} 
+            placeholder={t('search_placeholder', 'یہاں تلاش کریں...')} 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)} 
-            className="w-full bg-[#F5E6D3] border-2 border-[#D4AF37]/20 rounded-2xl py-3 px-10 text-[#3D0A0A] text-right outline-none text-[11px] font-bold focus:border-[#D4AF37] placeholder:text-[#3D0A0A]/40 transition-colors" 
+            className="w-full bg-[#F5E6D3] border-2 border-[#D4AF37]/20 rounded-2xl py-3 pl-10 pr-10 text-[#3D0A0A] text-right outline-none text-[11px] font-black focus:border-[#D4AF37] transition shadow-inner placeholder:text-[#3D0A0A]/40" 
           />
+          {/* سرچ گلاس آئیکن دائیں طرف */}
           <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3D0A0A]/60" />
-          <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
+          {/* فلٹر نوچ آئیکن بائیں طرف */}
+          <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4AF37] cursor-pointer hover:text-[#3D0A0A]" />
         </div>
       </div>
+
     </header>
   );
 };

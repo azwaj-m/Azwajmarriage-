@@ -1,70 +1,33 @@
-@import 'swiper/css';
-@import 'swiper/css/effect-cards';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  /* 🚫 ہوم پیج کے نچلے تھمب نیلز کے لیے ڈیفالٹ براؤزر اسکرول بار کو چھپانے کا رول */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
+
+/* 🎨 ایپ کا گلوبل بیک گراؤنڈ اسموتھنگ رول */
 body {
-  background-color: #FDF5F5;
-  overflow: hidden;
   margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  user-select: none;
+  background-color: #3D0A0A; /* پریمیم ڈارک ریڈ شیڈ فار فال بیک */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- Language Selector Custom Scrollbar --- */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+/* 🎪 سوائپر کارڈز کے ڈراپ شیڈو کو مزید گہرا اور پریمیم بنانے کے لیے */
+.swiper-slide-shadow {
+  background: rgba(74, 14, 14, 0.3) !important;
+  border-radius: 45px !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #D4AF37;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* --- Swiper / Cards Styling --- */
-.swiper {
-  width: 100%;
-  height: 100%;
-}
-
-.swiper-slide {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 40px !important;
-}
-
-/* --- UI Compact Layout (Header/Nav) --- */
-nav, header {
-  padding-top: 2px !important;
-  padding-bottom: 2px !important;
-}
-
-header input {
-  height: 30px !important;
-}
-
-nav button {
-  transform: scale(0.85);
-}
-
-/* مڑے ہوئے گولڈن آرک کے لیے پاتھ شیپ */
-.clip-path-curve {
-  clip-path: ellipse(80% 55% at 50% 15%);
-}
-
-/* اسکرول بار غائب کرنے کے لیے */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.swiper-cards {
+  overflow: visible !important;
 }

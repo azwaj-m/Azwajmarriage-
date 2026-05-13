@@ -1,109 +1,92 @@
 import React from 'react';
-import { Home, Heart, MessageCircle, User, Crown, Bell, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useUser } from '../context/UserContext';
+import { Home, Heart, MessageCircle, User, Crown, Bell } from 'lucide-react';
 
-const BottomNav = ({ activeTab, setActiveTab, setNotificationFilter }) => {
+const BottomNav = ({ activeTab, setActiveTab }) => {
   const { t } = useTranslation();
-  const { userData } = useUser();
 
+  // پراجیکٹ کے RTL فلو کے مطابق دائیں سے بائیں (Right to Left) ترتیب تاکہ فلوٹنگ چیٹ بالکل سینٹر (تیسرے نمبر) پر رہے
   const tabs = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'discover', label: 'Matches', icon: Heart },
-    { id: 'chat', label: 'Chat', icon: MessageCircle },
-    { id: 'notifications', label: 'Activity', icon: Bell },
-    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'home', label: t('nav_home', 'Home'), icon: Home },
+    { id: 'discover', label: t('nav_matches', 'Matches'), icon: Heart },
+    { id: 'chat', label: t('nav_chat', 'Chat'), icon: MessageCircle }, // سینٹرل فلوٹنگ ایکشن
+    { id: 'notifications', label: t('nav_activity', 'Activity'), icon: Bell },
+    { id: 'profile', label: t('nav_profile', 'Profile'), icon: User },
   ];
 
-  // کاؤنٹرز پر کلک کرنے کا ہینڈلر جو یوزر کو نوٹیفکیشن پیج پر متعلقہ فلٹر کے ساتھ بھیجے گا
-  const handleStatClick = (filterType) => {
-    setActiveTab('notifications');
-    if (typeof setNotificationFilter === 'function') {
-      setNotificationFilter(filterType);
-    }
-  };
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] max-w-md mx-auto">
-      {/* ۱۔ مین نیویگیشن بار */}
-      <nav className="bg-[#F5E6D3]/95 backdrop-blur-md py-3 px-2 border-t border-[#D4AF37]/40 flex justify-around items-center rounded-t-[30px] shadow-[0_-8px_25px_rgba(0,0,0,0.15)]">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] max-w-md mx-auto" dir="rtl">
+      
+      {/* 👑 مین پریمیم نیویگیشن بار (لائٹ لگژری گلاس لک) */}
+      <nav className="bg-[#F5E6D3]/95 backdrop-blur-md py-1.5 px-3 border-t-2 border-[#D4AF37]/30 flex justify-between items-end rounded-t-[30px] shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
 
+          // ۱۔ چیٹ بٹن کو سینٹرل فلوٹنگ لک دی گئی ہے (باقی فائلز سے فلی کنیکٹڈ)
+          if (tab.id === 'chat') {
+            return (
+              <div key={tab.id} className="flex-1 flex justify-center relative -top-5">
+                <button 
+                  onClick={() => setActiveTab(tab.id)} 
+                  className={`p-3 rounded-full border-4 shadow-2xl transition-all duration-300 transform active:scale-90 ${
+                    isActive 
+                      ? 'bg-[#4A0E0E] border-[#D4AF37] scale-105' 
+                      : 'bg-[#4A0E0E] border-[#FFFDF9] hover:border-[#D4AF37]/50'
+                  }`}
+                  title={tab.label}
+                >
+                  <Icon size={20} className="text-[#D4AF37] fill-[#D4AF37]/10" strokeWidth={isActive ? 3 : 2} />
+                  {/* ان ریڈ میسیج ڈاٹ انڈیکیٹر */}
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#4A0E0E]"></span>
+                </button>
+              </div>
+            );
+          }
+
+          // ۲۔ باقی تمام ریگولر ایکٹو ٹیبز
           return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col items-center justify-center gap-1 min-w-[60px] transition-all duration-300 active:scale-90 ${
-                isActive ? 'text-[#4A0E0E]' : 'text-gray-500'
+            <button 
+              key={tab.id} 
+              onClick={() => setActiveTab(tab.id)} 
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-300 relative pb-1 ${
+                isActive ? 'text-[#4A0E0E] scale-110 font-black' : 'text-gray-400 opacity-80 hover:opacity-100'
               }`}
             >
-              <div className={`p-1.5 rounded-xl transition-all ${isActive ? 'bg-[#4A0E0E]/10' : ''}`}>
-                <Icon 
-                  size={24} 
-                  strokeWidth={isActive ? 3.5 : 2.5} 
-                  className={isActive ? 'drop-shadow-sm' : ''}
-                />
+              {/* آئیکن پلس ایکٹو اسٹیٹ اینیمیشن */}
+              <div className="relative p-1">
+                <Icon size={19} strokeWidth={isActive ? 3 : 2} className={isActive ? 'text-[#4A0E0E]' : 'text-gray-500'} />
               </div>
-              <span className={`text-[9px] font-black uppercase tracking-tighter transition-all ${
-                isActive ? 'opacity-100 scale-105' : 'opacity-70'
-              }`}>
-                {t(tab.id, tab.label)}
+
+              {/* ٹیکسٹ لیبل */}
+              <span className={`text-[8px] font-black uppercase tracking-tight text-center ${isActive ? 'text-[#4A0E0E]' : 'text-gray-500/80'}`}>
+                {tab.label}
               </span>
-              {isActive && <div className="w-5 h-1 bg-[#4A0E0E] rounded-full mt-0.5 animate-in fade-in zoom-in duration-200"></div>}
+
+              {/* نیچے موجود ایکٹو پریمیم ڈاٹ */}
+              {isActive && (
+                <span className="w-1.5 h-1.5 bg-[#4A0E0E] rounded-full absolute bottom-[-2px] animate-pulse"></span>
+              )}
             </button>
           );
         })}
       </nav>
 
-      {/* ۲۔ پریمیم، ویریفیکیشن اور فعال لوکل اسٹیٹس بار (کلک ایبل کاؤنٹرز کے ساتھ) */}
-      <div className="bg-[#4A0E0E] py-1.5 px-4 flex justify-between items-center text-[8px] text-white font-black uppercase tracking-widest border-t border-[#D4AF37]/20 select-none">
-         <div className="flex items-center gap-3">
-           <div className="flex items-center gap-1 active:scale-95 transition-transform cursor-pointer">
-             <Crown size={12} className="text-[#D4AF37] fill-[#D4AF37]"/>
-             <span className="text-[#D4AF37]">Premium</span>
-           </div>
-           {userData?.verificationStatus === 'verified' && (
-             <div className="flex items-center gap-0.5 text-blue-400">
-               <ShieldCheck size={11} className="fill-blue-500 text-white" />
-               <span>Verified</span>
-             </div>
-           )}
+      {/* 📊 پریمیم لائیو اسٹیٹس بار (Super Thin Footer - 100% سنکڈ) */}
+      <div className="bg-[#4A0E0E] py-1 px-4 flex justify-between items-center text-[7px] text-white/90 font-bold uppercase tracking-widest border-t border-[#D4AF37]/20">
+         <div className="flex items-center gap-1 cursor-pointer active:opacity-80">
+           <Crown size={9} className="text-[#D4AF37] fill-[#D4AF37]/20" />
+           <span className="text-[#D4AF37] font-black">{t('status_premium', 'PREMIUM MEMBER')}</span>
          </div>
-         
-         {/* تین لائیو فعال بٹنز جو براہ راست نوٹیفکیشنز سے منسلک ہیں */}
-         <div className="flex gap-4 items-center">
-           {/* Exclusive بٹن */}
-           <button 
-             onClick={() => handleStatClick('exclusive')}
-             className="flex flex-col items-end active:scale-95 transition-transform hover:text-[#D4AF37] outline-none"
-           >
-             <span className="text-[7px] opacity-60">Exclusive</span>
-             <span className="font-bold text-[10px]">25</span>
-           </button>
-           <span className="w-[1px] h-3 bg-white/20"></span>
-           
-           {/* Inprogress بٹن */}
-           <button 
-             onClick={() => handleStatClick('inprogress')}
-             className="flex flex-col items-end active:scale-95 transition-transform hover:text-[#D4AF37] outline-none"
-           >
-             <span className="text-[7px] opacity-60">Inprogress</span>
-             <span className="font-bold text-[10px]">12</span>
-           </button>
-           <span className="w-[1px] h-3 bg-white/20"></span>
-           
-           {/* Viewed بٹن */}
-           <button 
-             onClick={() => handleStatClick('viewed')}
-             className="flex flex-col items-end active:scale-95 transition-transform hover:text-[#D4AF37] outline-none"
-           >
-             <span className="text-[7px] opacity-60">Viewed</span>
-             <span className="font-bold text-[10px]">88</span>
-           </button>
+         <div className="flex gap-2.5 items-center text-white/70">
+           <span>25 {t('status_exclusive', 'Exclusive')}</span>
+           <span className="text-[#D4AF37]/30">|</span>
+           <span>12 {t('status_inprogress', 'In Progress')}</span>
+           <span className="text-[#D4AF37]/30">|</span>
+           <span className="text-[#D4AF37]">88 {t('status_viewed', 'Viewed')}</span>
          </div>
       </div>
+
     </div>
   );
 };

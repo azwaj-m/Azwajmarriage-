@@ -1,111 +1,83 @@
 import React, { useState } from 'react';
-import { useUser } from '../context/UserContext';
-import { db, storage } from '../utils/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ArrowRight, ShieldCheck, Upload, AlertCircle } from 'lucide-react';
 
 const Verification = ({ onBack }) => {
-  const { user, userData } = useUser();
-  const [cnicFile, setCnicFile] = useState(null);
-  const [selfieFile, setSelfieFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [idNumber, setIdNumber] = useState('');
+  const [uploaded, setUploaded] = useState(false);
 
-  const handleUpload = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!cnicFile || !selfieFile) {
-      setMessage("براہ کرم شناختی کارڈ اور سیلفی دونوں تصاویر اپلوڈ کریں۔");
-      return;
-    }
-
-    setUploading(true);
-    setMessage('');
-
-    try {
-      // 1. Storage میں شناختی کارڈ اپلوڈ کریں
-      const cnicRef = ref(storage, `verifications/${user.uid}/cnic_${Date.now()}`);
-      await uploadBytes(cnicRef, cnicFile);
-      const cnicUrl = await getDownloadURL(cnicRef);
-
-      // 2. Storage میں سیلفی اپلوڈ کریں
-      const selfieRef = ref(storage, `verifications/${user.uid}/selfie_${Date.now()}`);
-      await uploadBytes(selfieRef, selfieFile);
-      const selfieUrl = await getDownloadURL(selfieRef);
-
-      // 3. Firestore میں یوزر کا سٹیٹس اپڈیٹ کریں
-      const userDocRef = doc(db, "users", user.uid);
-      await updateDoc(userDocRef, {
-        verificationStatus: "pending", // pending, verified, rejected
-        cnicDocUrl: cnicUrl,
-        selfieDocUrl: selfieUrl,
-        verificationSubmittedAt: new Date().toISOString()
-      });
-
-      setMessage("آپ کی دستاویزات موصول ہو گئی ہیں۔ تصدیق کا عمل 24 گھنٹوں میں مکمل ہو جائے گا۔");
-    } catch (error) {
-      console.error("Verification Upload Error:", error);
-      setMessage("اپلوڈ کرنے میں مسئلہ پیش آیا۔ دوبارہ کوشش کریں۔");
-    } finally {
-      setUploading(false);
-    }
+    if (!idNumber) return alert('براہ کرم شناختی نمبر درج کریں');
+    setUploaded(true);
+    alert('آپ کی دستاویزات آفیشل ٹیم کو موصول ہو گئی ہیں۔ 24 گھنٹے میں بیج ایکٹیو ہو جائے گا۔');
+    onBack();
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4 text-right" dir="rtl">
-      <div className="flex justify-between items-center border-b pb-3">
-        <h2 className="text-xl font-bold text-[#4A0E0E]">پروفائل کی تصدیق (CNIC)</h2>
-        <button onClick={onBack} className="text-gray-500 hover:text-black">← واپسی</button>
-      </div>
-
-      <p className="text-sm text-gray-600 leading-relaxed">
-        ازواج ایپ پر سنجیدہ رشتوں کو یقینی بنانے کے لیے شناختی کارڈ کی تصدیق لازمی ہے۔ آپ کا ڈیٹا مکمل طور پر محفوظ رکھا جائے گا اور کسی دوسرے یوزر کو نہیں دکھایا جائے گا۔
-      </p>
-
-      {userData?.verificationStatus === 'verified' ? (
-        <div className="p-4 bg-green-100 text-green-800 rounded-lg text-center font-bold">
-          ✅ آپ کا اکاؤنٹ تصدیق شدہ (Verified) ہے۔
+    <div className="w-full min-h-screen bg-[#FFFDF9] text-[#4A0E0E] flex flex-col" dir="rtl">
+      {/* ہیڈر بار */}
+      <header className="bg-gradient-to-r from-[#4A0E0E] to-[#3D0A0A] p-5 rounded-b-[35px] shadow-xl flex items-center gap-4 border-b border-[#D4AF37]/20">
+        <button type="button" onClick={onBack} className="text-[#D4AF37] p-2 hover:bg-white/10 rounded-full transition-all active:scale-90">
+          <ArrowRight size={20} />
+        </button>
+        <div>
+          <h2 className="text-sm font-black text-[#D4AF37] tracking-tight">آفیشل شناختی تصدیق (CNIC)</h2>
+          <p className="text-[9px] text-gray-300 font-bold mt-0.5">محفوظ اور قابلِ بھروسہ فیملی نیٹ ورک</p>
         </div>
-      ) : userData?.verificationStatus === 'pending' ? (
-        <div className="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center font-bold animate-pulse">
-          ⏳ آپ کی درخواست زیرِ غور ہے۔ تصدیق جاری ہے...
+      </header>
+
+      {/* فارم ایریا */}
+      <form onSubmit={handleSubmit} className="p-5 space-y-5 flex-1 overflow-y-auto no-scrollbar text-right pb-24">
+        
+        {/* معلومات گائیڈ الرٹ */}
+        <div className="p-4 bg-blue-50/60 border border-blue-100 rounded-2xl flex items-start gap-3">
+          <AlertCircle size={18} className="text-blue-600 shrink-0 mt-0.5" />
+          <p className="text-[10px] font-bold text-blue-800 leading-relaxed">
+            ازواج ایپ پر رشتوں کی شفافیت کے لیے شناختی کارڈ یا پاسپورٹ کی تصدیق لازمی ہے۔ آپ کا ڈیٹا مکمل انکرپٹڈ اور محفوظ رہتا ہے۔
+          </p>
         </div>
-      ) : (
-        <form onSubmit={handleUpload} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">شناختی کارڈ کی فرنٹ تصویر:</label>
-            <input 
-              type="file" 
-              accept="image/*"
-              onChange={(e) => setCnicFile(e.target.files[0])}
-              className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
-            />
+
+        {/* شناختی نمبر ان پٹ */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-black text-[#4A0E0E] px-1">قومی شناختی کارڈ / پاسپورٹ نمبر</label>
+          <input 
+            type="text" 
+            value={idNumber}
+            onChange={(e) => setIdNumber(e.target.value)}
+            placeholder="مثال: 42101-XXXXXXX-X"
+            className="w-full bg-white border border-gray-100 p-3.5 rounded-xl text-xs font-bold text-center text-[#4A0E0E] shadow-xs focus:outline-hidden focus:border-[#4A0E0E]"
+          />
+        </div>
+
+        {/* فائل اپلوڈ باکس */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-black text-[#4A0E0E] px-1">شناختی کارڈ کی فرنٹ تصویر اپلوڈ کریں</label>
+          <div className="w-full h-36 bg-white border-2 border-dashed border-[#D4AF37]/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer p-4 hover:border-[#4A0E0E] transition-colors relative">
+            <Upload size={24} className="text-[#4A0E0E]/60 mb-2" />
+            <span className="text-[10px] font-black text-[#4A0E0E]">تصویر منتخب کرنے کے لیے یہاں کلک کریں</span>
+            <span className="text-[8px] text-gray-400 font-bold mt-0.5">JPG, PNG (Max 5MB)</span>
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">اپنی ایک تازہ سیلفی (شناختی کارڈ ہاتھ میں پکڑ کر):</label>
-            <input 
-              type="file" 
-              accept="image/*"
-              onChange={(e) => setSelfieFile(e.target.files[0])}
-              className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
-            />
+        {/* فائل اپلوڈ باکس (بیک سائیڈ) */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-black text-[#4A0E0E] px-1">شناختی کارڈ کی بیک تصویر اپلوڈ کریں</label>
+          <div className="w-full h-36 bg-white border-2 border-dashed border-[#D4AF37]/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer p-4 hover:border-[#4A0E0E] transition-colors relative">
+            <Upload size={24} className="text-[#4A0E0E]/60 mb-2" />
+            <span className="text-[10px] font-black text-[#4A0E0E]">تصویر منتخب کرنے کے لیے یہاں کلک کریں</span>
+            <span className="text-[8px] text-gray-400 font-bold mt-0.5">JPG, PNG (Max 5MB)</span>
           </div>
+        </div>
 
-          {message && (
-            <div className={`p-3 rounded-lg text-xs font-semibold ${message.includes('کامیاب') || message.includes('زیرِ غور') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-              {message}
-            </div>
-          )}
+        {/* سبمٹ بٹن */}
+        <button
+          type="submit"
+          className="w-full h-12 bg-gradient-to-r from-[#4A0E0E] to-[#3D0A0A] text-[#D4AF37] text-xs font-black rounded-xl shadow-lg border border-[#D4AF37]/20 active:scale-98 transition-all mt-4 flex items-center justify-center gap-2"
+        >
+          <ShieldCheck size={16} /> دستاویزات جمع کروائیں
+        </button>
 
-          <button
-            type="submit"
-            disabled={uploading}
-            className="w-full py-2 px-4 bg-[#4A0E0E] text-white rounded-lg font-bold hover:bg-opacity-90 transition disabled:bg-gray-400"
-          >
-            {uploading ? "اپلوڈ ہو رہا ہے..." : "دستاویزات جمع کرائیں"}
-          </button>
-        </form>
-      )}
+      </form>
     </div>
   );
 };

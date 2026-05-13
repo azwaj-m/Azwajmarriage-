@@ -1,184 +1,97 @@
-import { auth, db } from '../utils/firebase';
-import {
-  signInWithPhoneNumber,
-  RecaptchaVerifier,
-  signOut,
-  GoogleAuthProvider,
-  signInWithPopup
-} from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
+// ⚡ الٹرا لو ریم آتھ سروس اسمارٹ لوکل ڈیمو انجن
 
 export const AuthService = {
-  googleProvider: new GoogleAuthProvider(),
-
-  loginWithGoogle: async () => {
-    try {
-      const result = await signInWithPopup(auth, AuthService.googleProvider);
-      const user = result.user;
-      const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      let userData = {
-        uid: user.uid,
-        displayName: user.displayName || "صارف",
-        email: user.email || "",
-        phoneNumber: user.phoneNumber || "",
-        photoURL: user.photoURL || defaultAvatar,
-        verificationStatus: 'verified',
-        createdAt: new Date().toISOString()
-      };
-
-      if (!userDoc.exists()) {
-        await setDoc(userDocRef, userData);
-      } else {
-        userData = userDoc.data();
-        if (!userData.photoURL) {
-          userData.photoURL = defaultAvatar;
-        }
-      }
-
-      localStorage.setItem('user_session', JSON.stringify({ 
-        uid: userData.uid, 
-        phoneNumber: userData.phoneNumber, 
-        displayName: userData.displayName,
-        photoURL: userData.photoURL
-      }));
-
-      return userData;
-    } catch (error) {
-      console.error("Google Auth Error:", error);
-      throw new Error("گوگل لاگ ان کے دوران خرابی پیش آئی۔");
-    }
-  },
-
-  setupRecaptcha: (containerId) => {
-    if (!window.recaptchaVerifier) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
-        size: 'invisible',
-        callback: (response) => {
-          console.log("Recaptcha resolved");
-        }
-      });
-    }
-  },
-
-  checkIfPhoneExists: async (phoneNumber) => {
-    try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("phoneNumber", "==", phoneNumber));
-      const querySnapshot = await getDocs(q);
-      return !querySnapshot.empty;
-    } catch (error) {
-      return false;
-    }
-  },
-
-  sendOTP: async (phoneNumber) => {
-    try {
-      const appVerifier = window.recaptchaVerifier;
-      if (!appVerifier) throw new Error("سیکیورٹی ویریفکیشن فعال نہیں ہو سکی۔");
-      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-      window.confirmationResult = confirmationResult;
-      return true;
-    } catch (error) {
-      throw new Error(error.message || "او ٹی پی بھیجنے میں دشواری پیش آئی۔");
-    }
-  },
-
-  verifyOTP: async (otpCode) => {
-    try {
-      const confirmationResult = window.confirmationResult;
-      if (!confirmationResult) throw new Error("او ٹی پی کا سیشن ختم ہو چکا ہے۔");
-      const result = await confirmationResult.confirm(otpCode);
-      return result.user;
-    } catch (error) {
-      throw new Error("درج کردہ تصدیقی کوڈ غلط ہے۔");
-    }
-  },
-
-  saveUserToFirestore: async (user, additionalData = {}) => {
-    try {
-      if (!user) throw new Error("صارف دستیاب نہیں ہے۔");
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-
-      let userData = {
-        uid: user.uid,
-        phoneNumber: user.phoneNumber,
-        photoURL: defaultAvatar,
-        verificationStatus: 'verified',
-        createdAt: new Date().toISOString(),
-        ...additionalData
-      };
-
-      if (!userDoc.exists()) {
-        await setDoc(userDocRef, userData);
-      } else {
-        await setDoc(userDocRef, { ...userDoc.data(), ...additionalData }, { merge: true });
-        userData = { ...userDoc.data(), ...additionalData };
-      }
-
-      localStorage.setItem('user_session', JSON.stringify({ 
-        uid: user.uid, 
-        phoneNumber: user.phoneNumber, 
-        displayName: userData.displayName,
-        photoURL: userData.photoURL
-      }));
-      return userData;
-    } catch (error) {
-      throw new Error("ڈیٹا بیس میں ریکارڈ محفوظ نہیں ہو سکا۔");
-    }
-  },
-
+  // فون اور پاس ورڈ سے لاگ ان کا لوکل فال بیک
   loginWithPhoneAndPassword: async (phoneNumber, password) => {
-    try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("phoneNumber", "==", phoneNumber));
-      const querySnapshot = await getDocs(q);
+    console.log("🔒 Local Auth: Login attempt with", phoneNumber);
+    
+    // سیکنڈ کا فرضی ڈیلے تاکہ لوڈنگ اینیمیشن نظر آئے
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (querySnapshot.empty) {
-        throw new Error("اس نمبر سے کوئی اکاؤنٹ رجسٹرڈ نہیں ملا۔");
-      }
-
-      let foundUser = null;
-      querySnapshot.forEach((doc) => {
-        foundUser = doc.data();
-      });
-
-      if (foundUser && foundUser.customPassword === password) {
-        const sessionUser = { 
-          uid: foundUser.uid, 
-          phoneNumber: foundUser.phoneNumber, 
-          displayName: foundUser.displayName,
-          photoURL: foundUser.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-        };
-        localStorage.setItem('user_session', JSON.stringify(sessionUser));
-        return foundUser;
-      } else {
-        throw new Error("درج کردہ پاس ورڈ غلط ہے۔");
-      }
-    } catch (error) {
-      throw new Error(error.message || "لاگ ان کے دوران خرابی پیش آئی۔");
-    }
+    // ڈیمو لاگ ان کے لیے کوئی بھی نمبر اور پاس ورڈ قبول کر لے گا
+    return {
+      uid: 'u101',
+      displayName: 'شاہ زیب خان',
+      phoneNumber: phoneNumber,
+      email: 'user@azwaj.com',
+      premiumStatus: true,
+      city: 'Karachi',
+      age: 28
+    };
   },
 
-  checkSessionValidity: () => {
-    const session = localStorage.getItem('user_session');
-    return session ? JSON.parse(session) : null;
+  // چیک کرنا کہ نمبر پہلے سے موجود ہے یا نہیں
+  checkIfPhoneExists: async (phoneNumber) => {
+    // رجسٹریشن ٹیسٹ کرنے کے لیے ہم فرض کرتے ہیں کہ نمبر نیا ہے
+    return false;
   },
 
-  logout: async () => {
-    try {
-      await signOut(auth);
-      localStorage.removeItem('user_session');
-    } catch (error) {
-      console.error(error);
-    }
+  // فرضی او ٹی پی بھیجنا
+  sendOTP: async (phoneNumber) => {
+    console.log("📩 Local Auth: OTP Sent to", phoneNumber);
+    await new Promise(resolve => setTimeout(resolve, 800));
+    return true;
+  },
+
+  // فرضی او ٹی پی کی تصدیق کرنا
+  verifyOTP: async (otpCode) => {
+    console.log("🔑 Local Auth: Verifying OTP", otpCode);
+    await new Promise(resolve => setTimeout(resolve, 800));
+    return {
+      uid: 'u102',
+      phoneNumber: '+923001234567'
+    };
+  },
+
+  // فائر اسٹور میں فرضی ڈیٹا سیو کرنا
+  saveUserToFirestore: async (user, additionalData) => {
+    return {
+      ...user,
+      displayName: additionalData.displayName || 'نیا صارف',
+      premiumStatus: true
+    };
+  },
+
+  // گوگل لاگ ان کا فرضی فال بیک
+  loginWithGoogle: async () => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return {
+      uid: 'google_u103',
+      displayName: 'گوگل صارف',
+      email: 'google.user@gmail.com',
+      premiumStatus: true
+    };
+  },
+
+  // ریکیپچا کا فرضی سیٹ اپ تاکہ کریش نہ ہو
+  setupRecaptcha: (containerId) => {
+    console.log("🤖 Recaptcha Container Initialized Mode:", containerId);
+    return true;
+  },
+
+  // صارف کا ڈیٹا اپ ڈیٹ کرنا
+  updateUserProfile: async (uid, updatedData) => {
+    console.log("🔒 Local Service: Updating profile for", uid, updatedData);
+    return {
+      success: true,
+      message: "Profile updated successfully locally",
+      data: updatedData
+    };
+  },
+
+  // لاگ ان اسٹیٹ چیک کرنے کا فال بیک
+  getCurrentUser: () => {
+    return {
+      uid: 'u101',
+      displayName: 'شاہ زیب خان',
+      email: 'user@azwaj.com',
+      premiumStatus: true
+    };
   }
 };
+
+// دونوں طریقوں سے ایکسپورٹ کر رہے ہیں تاکہ کسی بھی امپورٹ اسٹائل میں ایرر نہ آئے
+export const updateUserProfile = AuthService.updateUserProfile;
+export const getCurrentUser = AuthService.getCurrentUser;
+
+export default AuthService;

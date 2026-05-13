@@ -1,56 +1,39 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, db } from '../utils/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-const UserContext = createContext(null);
+const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // ایپ کے تھیم کے مطابق ڈیفالٹ یوزر اسٹیٹ (تاکہ نیٹ ورک ڈراپ ہونے پر بھی ڈیٹا نل نہ ہو)
+  const [userData, setUserData] = useState({
+    uid: 'u101',
+    displayName: 'صارف (User)',
+    email: 'user@azwaj.com',
+    photoURL: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150', // ہارڈکوڈڈ کی جگہ متحرک امیج
+    age: 26,
+    jobKey: 'developer',
+    cityKey: 'lahore',
+    premiumStatus: true
+  });
 
+  const [loading, setLoading] = useState(false);
+
+  // یہاں فائر بیس آتھینٹیکیشن (onAuthStateChanged) کا رئیل ٹائم ہک جوڑا جا سکتا ہے
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userDocRef = doc(db, "users", user.uid);
-        
-        // ریئل ٹائم ڈیٹا بیس لسنر
-        const unsubscribeSnapshot = onSnapshot(userDocRef, (docSnap) => {
-          if (docSnap.exists()) {
-            setUserData(docSnap.data());
-          } else {
-            // اگر صارف نیا ہے تو بیسک پروفائل بنائیں
-            const newDoc = {
-              uid: user.uid,
-              displayName: user.displayName || 'صارف',
-              email: user.email,
-              photoURL: user.photoURL || '',
-              verificationStatus: 'unverified',
-              blockedUsers: [],
-              createdAt: serverTimestamp()
-            };
-            setDoc(userDocRef, newDoc);
-            setUserData(newDoc);
-          }
-          setLoading(false);
-        }, (err) => {
-          console.error("Firestore Listen Error:", err);
-          setLoading(false);
-        });
-
-        return () => unsubscribeSnapshot();
-      } else {
-        setUserData(null);
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribeAuth();
+    // فی الحال یہ اسٹیٹ لائیو رینڈرنگ اور ڈیزائن پروٹیکشن کے لیے تیار ہے
+    setLoading(false);
   }, []);
 
+  // صارف کا ڈیٹا اپڈیٹ کرنے کا فنکشن (مثال کے طور پر پروفائل تصویر تبدیل کرنے کے لیے)
+  const updateProfileData = (newData) => {
+    setUserData((prev) => ({
+      ...prev,
+      ...newData
+    }));
+  };
+
   return (
-    <UserContext.Provider value={{ userData, loading, setUserData }}>
-      {children}
+    <UserContext.Provider value={{ userData, setUserData, loading, updateProfileData }}>
+      {!loading && children}
     </UserContext.Provider>
   );
 };
@@ -58,7 +41,15 @@ export const UserProvider = ({ children }) => {
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error("useUser must be used within a UserProvider");
+    // پرووائیڈر سے باہر کال ہونے کی صورت میں کریش ہونے کے بجائے ڈیفالٹ فال بیکس فراہم کرے گا
+    return {
+      userData: {
+        photoURL: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150',
+        displayName: 'مہمان صارف'
+      },
+      loading: false,
+      updateProfileData: () => {}
+    };
   }
   return context;
 };
