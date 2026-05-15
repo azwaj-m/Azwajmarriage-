@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, CreditCard, Settings, Ban, LogOut, ChevronLeft, Award } from 'lucide-react';
 import EditProfileForm from '../components/EditProfileForm';
-import BlockedProfiles from '../components/BlockedProfiles';
+import BlockedProfiles from './BlockedProfiles';
 
 const ProfileManager = ({ onNavigate, setCurrentView }) => {
   // اسٹیٹ مینجمنٹ
