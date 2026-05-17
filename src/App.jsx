@@ -39,7 +39,7 @@ const App = () => {
 
   const filteredProfiles = useMemo(() => {
     const list = initialProfiles || [];
-    return list.filter(p => 
+    return list.filter(p =>
       p?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p?.city?.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -87,18 +87,23 @@ const App = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-[#FFFDF9] flex flex-col overflow-hidden relative shadow-2xl">
+    /* 🏰 اب پوری ایپ کا مین فریم آپ کی نئی بنائی گئی فرشی امیج (BkG.png) پر لاکڈ ہے */
+    <div
+      className="max-w-md mx-auto h-screen flex flex-col overflow-hidden relative shadow-2xl bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/images/BkG.png')" }}
+    >
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onAction={handleSidebarAction} />
-      
+
       {selectedProfile && (
-        <ProfileDetailModal 
-          profile={selectedProfile} 
-          onClose={() => setSelectedProfile(null)} 
-          onStartChat={() => { setActiveTab('chat'); setSelectedProfile(null); }} 
+        <ProfileDetailModal
+          profile={selectedProfile}
+          onClose={() => setSelectedProfile(null)}
+          onStartChat={() => { setActiveTab('chat'); setSelectedProfile(null); }}
         />
       )}
 
-      {currentView === 'main' && activeTab !== 'chat' && (
+      {/* 🎯 ہیڈر صرف اور صرف ہوم پیج (home) پر لوڈ ہوگا */}
+      {currentView === 'main' && activeTab === 'home' && (
         <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} toggleSidebar={() => setIsSidebarOpen(true)} />
       )}
 

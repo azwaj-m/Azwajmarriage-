@@ -60,7 +60,7 @@ const Notifications = ({ setActiveTab, setCurrentView }) => {
   return (
     <div className="bg-[#FDF5F5] min-h-full pb-20 animate-in fade-in duration-500">
       {/* ہیڈر */}
-      <div className="p-4 flex justify-between items-center bg-white border-b border-gray-100 sticky top-0 z-10">
+      <div className="p-4 flex justify-between items-center bg-transparent border-b border-gray-100 sticky top-0 z-10">
         <h2 className="text-[#4A0E0E] text-xl font-black uppercase tracking-tight">Activity</h2>
         <button className="text-[10px] font-bold text-[#D4AF37] uppercase bg-[#4A0E0E] px-3 py-1 rounded-full">
           Mark all read
@@ -82,7 +82,7 @@ const Notifications = ({ setActiveTab, setCurrentView }) => {
                 <div 
                   key={n.id}
                   onClick={() => handleNotificationClick(n.target)}
-                  className="bg-white p-3 rounded-2xl flex items-center justify-between shadow-sm border border-transparent active:border-[#D4AF37] active:scale-[0.98] transition-all cursor-pointer"
+                  className="bg-transparent p-3 rounded-2xl flex items-center justify-between shadow-sm border border-transparent active:border-[#D4AF37] active:scale-[0.98] transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`${n.bgColor} ${n.iconColor} p-2.5 rounded-xl`}>

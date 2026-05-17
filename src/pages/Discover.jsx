@@ -22,12 +22,39 @@ const Discover = () => {
     },
     {
       id: 2,
+      name: "Sana Ali",
+      age: "26",
+      cityKey: "karachi",
+      countryKey: "pakistan",
+      jobKey: "designer",
+      photoURL: "https://www.alamy.com/stock-photo-imran-khan-september-2007-dubai-uae-111688822.html"
+    },
+    {
+      id: 3,
+      name: "Sana Ali",
+      age: "26",
+      cityKey: "karachi",
+      countryKey: "pakistan",
+      jobKey: "designer",
+      photoURL: "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+    },
+    {
+      id: 4,
+      name: "Sana Ali",
+      age: "26",
+      cityKey: "karachi",
+      countryKey: "pakistan",
+      jobKey: "designer",
+      photoURL: "https://www.alamy.com/london-uk-19-feb-2023-pictured-jemima-goldsmith-attends-the-ee-british-academy-film-awards-2023-arrivals-at-royal-festival-hall-southbank-londo-image567750616.html"
+    },
+    {
+      id: 5,
       name: "Zainab",
       age: "24",
       cityKey: "lahore",
       countryKey: "pakistan",
       jobKey: "doctor",
-      photoURL: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80"
+      photoURL: "https://share.google/Iz3ok4UpLkcohAIXN"
     }
   ]);
 

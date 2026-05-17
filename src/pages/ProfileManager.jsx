@@ -53,7 +53,7 @@ const ProfileManager = ({ onNavigate, setCurrentView }) => {
       <header className="bg-gradient-to-r from-[#4A0E0E] to-[#3D0A0A] p-5 rounded-b-[35px] shadow-xl flex items-center justify-between sticky top-0 z-50 border-b border-[#D4AF37]/20">
         <div className="w-9"></div>
         <h2 className="text-sm font-black text-[#D4AF37] tracking-tight uppercase">میرا اکاؤنٹ مینیجر</h2>
-        <button type="button" onClick={() => window.location.reload()} className="text-[#D4AF37] p-2 hover:bg-white/10 rounded-full transition-all active:scale-90">
+        <button type="button" onClick={() => window.location.reload()} className="text-[#D4AF37] p-2 hover:bg-transparent/10 rounded-full transition-all active:scale-90">
           <LogOut size={18} />
         </button>
       </header>
@@ -61,7 +61,7 @@ const ProfileManager = ({ onNavigate, setCurrentView }) => {
       <div className="px-5 space-y-6 pt-6 pb-28 flex-1 overflow-y-auto no-scrollbar">
         
         {/* 👑 صارف کا پروفائل کارڈ */}
-        <div className="flex flex-col items-center justify-center p-6 bg-white border border-[#D4AF37]/10 rounded-[35px] shadow-xl text-center relative overflow-hidden">
+        <div className="flex flex-col items-center justify-center p-6 bg-transparent border border-[#D4AF37]/10 rounded-[35px] shadow-xl text-center relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-[#F5E6D3]/20 rounded-bl-full pointer-events-none" />
           
           <div className="relative">
@@ -88,7 +88,7 @@ const ProfileManager = ({ onNavigate, setCurrentView }) => {
           <button 
             type="button"
             onClick={() => setActiveSubView("edit")}
-            className="w-full bg-white border border-gray-100 p-4 rounded-2xl shadow-md flex items-center justify-between transition-all active:scale-98 hover:border-[#D4AF37]/20 text-right"
+            className="w-full bg-transparent border border-gray-100 p-4 rounded-2xl shadow-md flex items-center justify-between transition-all active:scale-98 hover:border-[#D4AF37]/20 text-right"
           >
             <div className="flex items-center gap-3.5">
               <div className="p-2.5 bg-[#F5E6D3]/30 rounded-xl text-[#4A0E0E]">
@@ -106,7 +106,7 @@ const ProfileManager = ({ onNavigate, setCurrentView }) => {
           <button 
             type="button"
             onClick={() => setActiveSubView("blocked")}
-            className="w-full bg-white border border-gray-100 p-4 rounded-2xl shadow-md flex items-center justify-between transition-all active:scale-98 hover:border-[#D4AF37]/20 text-right"
+            className="w-full bg-transparent border border-gray-100 p-4 rounded-2xl shadow-md flex items-center justify-between transition-all active:scale-98 hover:border-[#D4AF37]/20 text-right"
           >
             <div className="flex items-center gap-3.5">
               <div className="p-2.5 bg-red-50 rounded-xl text-red-600">
@@ -121,7 +121,7 @@ const ProfileManager = ({ onNavigate, setCurrentView }) => {
           </button>
 
           {/* شناختی تصدیق */}
-          <div className="w-full bg-white border border-gray-100 p-4 rounded-2xl shadow-md flex items-center justify-between text-right">
+          <div className="w-full bg-transparent border border-gray-100 p-4 rounded-2xl shadow-md flex items-center justify-between text-right">
             <div className="flex items-center gap-3.5">
               <div className="p-2.5 bg-green-50 rounded-xl text-green-600">
                 <Shield size={18} />
@@ -134,7 +134,7 @@ const ProfileManager = ({ onNavigate, setCurrentView }) => {
           </div>
 
           {/* ممبرشپ کارڈ */}
-          <div className="w-full bg-white border border-gray-100 p-4 rounded-2xl shadow-md flex items-center justify-between text-right">
+          <div className="w-full bg-transparent border border-gray-100 p-4 rounded-2xl shadow-md flex items-center justify-between text-right">
             <div className="flex items-center gap-3.5">
               <div className="p-2.5 bg-amber-50 rounded-xl text-amber-600">
                 <CreditCard size={18} />

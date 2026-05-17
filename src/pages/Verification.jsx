@@ -17,7 +17,7 @@ const Verification = ({ onBack }) => {
     <div className="w-full min-h-screen bg-[#FFFDF9] text-[#4A0E0E] flex flex-col" dir="rtl">
       {/* ہیڈر بار */}
       <header className="bg-gradient-to-r from-[#4A0E0E] to-[#3D0A0A] p-5 rounded-b-[35px] shadow-xl flex items-center gap-4 border-b border-[#D4AF37]/20">
-        <button type="button" onClick={onBack} className="text-[#D4AF37] p-2 hover:bg-white/10 rounded-full transition-all active:scale-90">
+        <button type="button" onClick={onBack} className="text-[#D4AF37] p-2 hover:bg-transparent/10 rounded-full transition-all active:scale-90">
           <ArrowRight size={20} />
         </button>
         <div>
@@ -45,14 +45,14 @@ const Verification = ({ onBack }) => {
             value={idNumber}
             onChange={(e) => setIdNumber(e.target.value)}
             placeholder="مثال: 42101-XXXXXXX-X"
-            className="w-full bg-white border border-gray-100 p-3.5 rounded-xl text-xs font-bold text-center text-[#4A0E0E] shadow-xs focus:outline-hidden focus:border-[#4A0E0E]"
+            className="w-full bg-transparent border border-gray-100 p-3.5 rounded-xl text-xs font-bold text-center text-[#4A0E0E] shadow-xs focus:outline-hidden focus:border-[#4A0E0E]"
           />
         </div>
 
         {/* فائل اپلوڈ باکس */}
         <div className="space-y-1.5">
           <label className="text-xs font-black text-[#4A0E0E] px-1">شناختی کارڈ کی فرنٹ تصویر اپلوڈ کریں</label>
-          <div className="w-full h-36 bg-white border-2 border-dashed border-[#D4AF37]/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer p-4 hover:border-[#4A0E0E] transition-colors relative">
+          <div className="w-full h-36 bg-transparent border-2 border-dashed border-[#D4AF37]/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer p-4 hover:border-[#4A0E0E] transition-colors relative">
             <Upload size={24} className="text-[#4A0E0E]/60 mb-2" />
             <span className="text-[10px] font-black text-[#4A0E0E]">تصویر منتخب کرنے کے لیے یہاں کلک کریں</span>
             <span className="text-[8px] text-gray-400 font-bold mt-0.5">JPG, PNG (Max 5MB)</span>
@@ -62,7 +62,7 @@ const Verification = ({ onBack }) => {
         {/* فائل اپلوڈ باکس (بیک سائیڈ) */}
         <div className="space-y-1.5">
           <label className="text-xs font-black text-[#4A0E0E] px-1">شناختی کارڈ کی بیک تصویر اپلوڈ کریں</label>
-          <div className="w-full h-36 bg-white border-2 border-dashed border-[#D4AF37]/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer p-4 hover:border-[#4A0E0E] transition-colors relative">
+          <div className="w-full h-36 bg-transparent border-2 border-dashed border-[#D4AF37]/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer p-4 hover:border-[#4A0E0E] transition-colors relative">
             <Upload size={24} className="text-[#4A0E0E]/60 mb-2" />
             <span className="text-[10px] font-black text-[#4A0E0E]">تصویر منتخب کرنے کے لیے یہاں کلک کریں</span>
             <span className="text-[8px] text-gray-400 font-bold mt-0.5">JPG, PNG (Max 5MB)</span>

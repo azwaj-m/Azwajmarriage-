@@ -45,9 +45,9 @@ const Chat = () => {
     return (
       <div className="w-full h-full bg-[#FFFDF9] flex flex-col fixed inset-0 z-50 max-w-md mx-auto" dir="rtl">
         {/* واٹس ایپ اسٹائل پریمیم چیٹ ہیڈر */}
-        <header className="bg-gradient-to-r from-[#4A0E0E] to-[#3D0A0A] p-4 flex items-center justify-between border-b border-[#D4AF37]/20 shadow-md">
+        <header className=" from-[#4A0E0E] to-[#3D0A0A] p-4 flex items-center justify-between border-b border-[#D4AF37]/20 shadow-md">
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => setActiveChat(null)} className="text-[#D4AF37] p-1 hover:bg-white/10 rounded-full">
+            <button type="button" onClick={() => setActiveChat(null)} className="text-[#D4AF37] p-1 hover:bg-transparent/10 rounded-full">
               <ArrowRight size={22} />
             </button>
             <div className="relative">
@@ -72,7 +72,7 @@ const Chat = () => {
               <div className={`max-w-[75%] p-3 rounded-2xl text-xs font-bold shadow-xs relative ${
                 msg.sender === 'me' 
                   ? 'bg-[#4A0E0E] text-[#FFFDF9] rounded-tr-none' 
-                  : 'bg-white text-[#4A0E0E] border border-gray-100 rounded-tl-none'
+                  : 'bg-transparent text-[#4A0E0E] border border-gray-100 rounded-tl-none'
               }`}>
                 <p className="leading-relaxed">{msg.text}</p>
                 <div className="text-[8px] mt-1 text-left opacity-70 flex items-center justify-end gap-0.5">
@@ -84,7 +84,7 @@ const Chat = () => {
         </div>
 
         {/* واٹس ایپ ان پٹ میسج بار */}
-        <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-gray-100 flex items-center gap-2 sticky bottom-0">
+        <form onSubmit={handleSendMessage} className="p-3 bg-transparent border-t border-gray-100 flex items-center gap-2 sticky bottom-0">
           <input
             type="text"
             value={typedMessage}
@@ -104,13 +104,13 @@ const Chat = () => {
   return (
     <div className="w-full h-full bg-[#FFFDF9] flex flex-col" dir="rtl">
       {/* لائیو چیٹ ٹائٹل بار (ہیڈر ختم کرنے کی وجہ سے اب یہ خود مختار ہے) */}
-      <div className="p-5 bg-gradient-to-r from-[#4A0E0E] to-[#3D0A0A] rounded-b-[35px] shadow-lg">
+      <div className="p-5  from-[#4A0E0E] to-[#3D0A0A] rounded-b-[35px] shadow-lg">
         <h2 className="text-center text-sm font-black text-[#D4AF37] tracking-wider uppercase">لائیو بات چیت (Chats)</h2>
       </div>
 
       {/* سرچ بار اور فلٹر */}
       <div className="px-4 pt-4 flex items-center gap-2">
-        <div className="flex-1 bg-white border border-gray-100 rounded-xl px-3 py-2 flex items-center gap-2 shadow-xs">
+        <div className="flex-1 bg-transparent border border-gray-100 rounded-xl px-3 py-2 flex items-center gap-2 shadow-xs">
           <Search size={14} className="text-gray-400" />
           <input
             type="text"
@@ -120,7 +120,7 @@ const Chat = () => {
             className="w-full bg-transparent text-xs font-bold text-[#4A0E0E] focus:outline-hidden text-right"
           />
         </div>
-        <button type="button" className="p-2.5 bg-white border border-gray-100 rounded-xl text-[#4A0E0E] shadow-xs active:scale-95">
+        <button type="button" className="p-2.5 bg-transparent border border-gray-100 rounded-xl text-[#4A0E0E] shadow-xs active:scale-95">
           <SlidersHorizontal size={14} />
         </button>
       </div>
@@ -133,7 +133,7 @@ const Chat = () => {
           <div
             key={chat.id}
             onClick={() => setActiveChat(chat)}
-            className="bg-white border border-gray-50 p-3.5 rounded-2xl shadow-xs flex items-center justify-between cursor-pointer active:scale-99 hover:border-[#D4AF37]/20 transition-all text-right"
+            className="bg-transparent border border-gray-50 p-3.5 rounded-2xl shadow-xs flex items-center justify-between cursor-pointer active:scale-99 hover:border-[#D4AF37]/20 transition-all text-right"
           >
             {/* تصویر اور ٹیکسٹ معلومات */}
             <div className="flex items-center gap-3">

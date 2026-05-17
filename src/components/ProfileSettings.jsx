@@ -7,7 +7,7 @@ const ProfileSettings = ({ onBack }) => {
   const [profileVisible, setProfileVisible] = useState(true);
 
   return (
-    <div className="h-full bg-white flex flex-col text-right">
+    <div className="h-full bg-transparent flex flex-col text-right">
       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
         <button onClick={onBack} className="p-1 hover:bg-gray-100 rounded-full">
           <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -36,7 +36,7 @@ const ProfileSettings = ({ onBack }) => {
                 onChange={() => setProfileVisible(!profileVisible)}
                 className="sr-only peer" 
               />
-              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-rose-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500"></div>
+              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-rose-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-transparent after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500"></div>
             </label>
             <div className="text-right">
               <span className="text-sm font-bold text-gray-700 block">پروفائل پبلک رکھیں</span>

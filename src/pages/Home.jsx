@@ -51,7 +51,7 @@ const Home = ({ setSelectedProfile, onAction }) => {
   const isRTL = i18n.dir() === 'rtl';
 
   return (
-    <div className="flex flex-col gap-8 pb-28 pt-4 w-full min-h-screen text-right" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="flex flex-col gap-8 pb-4 pt-8 w-full min-h-screen text-right" dir={isRTL ? 'rtl' : 'ltr'}>
       
       {/* 🔎 سرچ رزلٹ کے اعداد و شمار */}
       {searchQuery && (
@@ -79,7 +79,7 @@ const Home = ({ setSelectedProfile, onAction }) => {
             {filteredResults.map((p) => (
               <SwiperSlide 
                 key={p?.uid || p?.id || Math.random().toString()} 
-                className="rounded-[45px] bg-white shadow-2xl border-[6px] border-white overflow-hidden relative"
+                className="rounded-[45px] bg-transparent shadow-[0_0_20px_rgba(212,175,55,0.4)] border-[4px] border-gradient-to-r from-[#D4AF37] via-[#FFDF73] to-[#AA8928] overflow-hidden relative animate-pulse-slow"
               >
                 {/* 🛠️ کلک پر اب handleProfileOpen رن ہوگا */}
                 <div className="relative h-full w-full cursor-pointer group" onClick={() => handleProfileOpen(p)}>
@@ -94,20 +94,20 @@ const Home = ({ setSelectedProfile, onAction }) => {
                   <button 
                     type="button"
                     onClick={(e) => handleLike(e, p)}
-                    className="absolute top-4 right-4 bg-white/30 backdrop-blur-md p-2 rounded-full border border-white/40 shadow-md active:scale-90 transition-all z-10"
+                    className="absolute top-4 right-4 bg-[#FFFDF9]/30 backdrop-blur-md p-2 rounded-full border border-white/40 shadow-md active:scale-90 transition-all z-10"
                   >
                     <Heart size={16} className="text-white fill-[#D4AF37]" />
                   </button>
                   
                   {/* کارڈ انفارمیشن اوورلے */}
-                  <div className="absolute inset-x-0 bottom-0 bg-white/95 backdrop-blur-xs p-4 m-2 rounded-[35px] shadow-2xl text-center border border-gray-100/50">
+                  <div className="absolute inset-x-0 bottom-0 bg-[#FFFDF9]/95 backdrop-blur-xs p-4 m-2 rounded-[35px] shadow-2xl text-center border border-gray-100/50">
                     <h2 className="text-[#4A0E0E] font-black text-base tracking-tighter uppercase flex items-center justify-center gap-1">
                       {p?.displayName || p?.name || 'مستند صارف'}
                       <VerifiedBadge status={p?.verificationStatus || 'verified'} />
                     </h2>
                     
                     <div className="flex flex-col items-center gap-0.5 mt-1">
-                      <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
+                      <p className="text-[9px] font-bold text-[#4A0E0E] font-bold uppercase tracking-widest">
                         {t('age', 'عمر')}: <span className="text-[#4A0E0E]">{p?.age || 'N/A'}</span> • {t('prof', 'پیشہ')}: <span className="text-[#4A0E0E]">{t(p?.jobKey || 'designer', p?.profession || 'ملازمت')}</span>
                       </p>
                       <div className="flex items-center gap-1 text-[9px] font-black text-[#D4AF37] uppercase">
@@ -138,7 +138,7 @@ const Home = ({ setSelectedProfile, onAction }) => {
             ))}
           </Swiper>
         ) : (
-          <div className="text-center py-20 text-gray-400 text-xs font-bold bg-white border border-gray-100 rounded-[45px] p-6 shadow-xl max-w-[260px] h-[380px] flex flex-col justify-center items-center">
+          <div className="text-center py-20 text-gray-400 text-xs font-bold bg-[#FFFDF9] border border-gray-100 rounded-[45px] p-6 shadow-xl max-w-[260px] h-[380px] flex flex-col justify-center items-center">
             <span className="text-3xl mb-3">🔍</span>
             <p className="text-[#4A0E0E] text-sm font-black">کوئی مماثلت نہیں ملی</p>
           </div>
@@ -166,8 +166,8 @@ const Home = ({ setSelectedProfile, onAction }) => {
                 onClick={() => handleProfileOpen(p)} 
                 className="flex flex-col items-center gap-1.5 flex-shrink-0 snap-start cursor-pointer transition-transform active:scale-95 group"
               >
-                <div className="relative p-0.5 rounded-full border-2 border-[#D4AF37] shadow-md bg-white">
-                  <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white relative">
+                <div className="relative p-0.5 rounded-[22px] border-2 border-[#D4AF37] shadow-xl bg-[#2b000d]">
+                  <div className="w-20 h-24 rounded-2xl overflow-hidden border border-[#D4AF37]/30 relative">
                     <img 
                       src={p?.photoURL || p?.img || defaultAvatar} 
                       alt={p?.displayName || p?.name} 
@@ -181,7 +181,7 @@ const Home = ({ setSelectedProfile, onAction }) => {
                     </div>
                   )}
                 </div>
-                <span className="text-[10px] font-black text-[#4A0E0E]">
+                <span className="text-[11px] font-black text-white mt-1">
                   {(p?.displayName || p?.name || t('user', 'صارف')).split(' ')[0]}
                 </span>
               </div>
@@ -205,7 +205,7 @@ const Home = ({ setSelectedProfile, onAction }) => {
 };
 
 const TrustBadge = ({ label, sub }) => (
-  <div className="flex flex-col items-center text-center flex-1 max-w-[115px] bg-white border border-gray-100/70 p-2.5 rounded-[22px] shadow-xs">
+  <div className="flex flex-col items-center text-center flex-1 max-w-[115px] bg-[#FFFDF9] border border-gray-100/70 p-2.5 rounded-[22px] shadow-xs">
     <div className="bg-[#F5E6D3] p-2 rounded-xl mb-1.5 border border-[#D4AF37]/10">
       <ShieldCheck size={14} className="text-[#4A0E0E]" />
     </div>

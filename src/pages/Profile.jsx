@@ -49,11 +49,11 @@ const Profile = ({ profile, onBack }) => {
         
         {/* معلومات گریڈ */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-xs">
+          <div className="bg-transparent p-4 rounded-3xl border border-gray-100 shadow-xs">
              <p className="text-gray-400 text-[10px] uppercase font-bold">{t('age', 'عمر')}</p>
              <p className="text-[#4A0E0E] font-black mt-0.5">{profile.age || 'N/A'}</p>
           </div>
-          <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-xs">
+          <div className="bg-transparent p-4 rounded-3xl border border-gray-100 shadow-xs">
              <p className="text-gray-400 text-[10px] uppercase font-bold">{t('prof', 'پیشہ')}</p>
              <p className="text-[#4A0E0E] font-black mt-0.5">{t(profile.jobKey || 'designer')}</p>
           </div>

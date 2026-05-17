@@ -106,7 +106,7 @@ const Sidebar = ({ isOpen, onClose, onAction }) => {
       <div className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full w-72 bg-[#FFFDF9] z-[200] transform transition-transform duration-300 flex flex-col shadow-2xl ${isOpen ? 'translate-x-0' : (isRTL ? 'translate-x-full' : '-translate-x-full')}`}>
         
         <div className="bg-gradient-to-b from-[#4A0E0E] to-[#3D0A0A] p-6 text-center relative flex-shrink-0 rounded-b-[30px] border-b border-[#D4AF37]/20 shadow-lg">
-          <button type="button" onClick={onClose} className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} text-[#D4AF37] p-1.5 hover:bg-white/10 rounded-full`}>
+          <button type="button" onClick={onClose} className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} text-[#D4AF37] p-1.5 hover:bg-[#F3E6D3]/10 rounded-full`}>
             <X size={20} />
           </button>
 
@@ -122,7 +122,7 @@ const Sidebar = ({ isOpen, onClose, onAction }) => {
             {userData?.name || "شاہ زیب خان"}
             <VerifiedBadge status={userData?.verificationStatus || 'verified'} />
           </h2>
-          <p className="text-[#D4AF37]/80 text-[9px] font-black uppercase tracking-widest mt-1 bg-white/10 py-1 px-3 rounded-full inline-block border border-[#D4AF37]/20">
+          <p className="text-[#D4AF37]/80 text-[9px] font-black uppercase tracking-widest mt-1 bg-[#F3E6D3]/10 py-1 px-3 rounded-full inline-block border border-[#D4AF37]/20">
             Royal Premium Member
           </p>
         </div>
@@ -141,7 +141,7 @@ const Sidebar = ({ isOpen, onClose, onAction }) => {
             </button>
           ))}
 
-          <button type="button" onClick={() => { setIsLangModalOpen(true); onClose(); }} className="w-full flex items-center justify-between p-3 rounded-xl bg-white border border-gray-200 text-[#4A0E0E] hover:border-[#D4AF37]/50 transition-all">
+          <button type="button" onClick={() => { setIsLangModalOpen(true); onClose(); }} className="w-full flex items-center justify-between p-3 rounded-xl bg-[#F3E6D3] border border-gray-200 text-[#4A0E0E] hover:border-[#D4AF37]/50 transition-all">
             <div className={`flex items-center gap-3.5 w-full ${isRTL ? 'flex-row' : 'flex-row-reverse'}`}>
               <div className="bg-[#F5E6D3]/60 p-2 rounded-xl text-[#4A0E0E]">
                 <Languages size={16} />

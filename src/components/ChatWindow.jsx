@@ -17,12 +17,6 @@ const ChatWindow = ({ activeChat, onBack }) => {
   return (
     <div className="h-full bg-gray-50 flex flex-col">
       {/* ہیڈر */}
-      <div className="px-4 py-3 bg-white border-b border-gray-100 flex items-center justify-between">
-        <button onClick={onBack} className="p-1 hover:bg-gray-100 rounded-full">
-          <ArrowRight className="w-5 h-5 text-gray-600" />
-        </button>
-        <span className="font-bold text-gray-800">{activeChat?.fullName || 'عائشہ خان'}</span>
-        <div className="w-8"></div>
       </div>
 
       {/* پیغامات */}
